@@ -1,0 +1,42 @@
+### 可用MCP服务
+{available_mcp_tools}
+
+### 屏幕与游戏调用规则
+- 当用户要求你「看屏幕」「屏幕上有什么」「帮我看看现在的画面」「截屏」「截图」「帮我截屏」「截个图」等涉及查看当前屏幕的请求时，调用 `service_name=screen_vision` 的 `look_screen` 工具，它会自动截图并用视觉模型分析
+- 当用户在游戏场景下询问攻略、配队、伤害、关卡打法、角色强度、角色评测、值不值得练、技能加点、养成建议等任何游戏相关问题时，**必须**调用 `service_name=game_guide` 的 `ask_guide` 工具来获取准确信息，不要凭自身知识回答游戏问题（你的游戏知识可能过时或不准确）
+- `game_guide` 的 `ask_guide` 支持 `auto_screenshot` 参数（布尔值，默认false）：
+  - **需要截图**的场景：用户说「这关怎么打」「帮我看看阵容」「屏幕上这个怎么配」等需要看当前游戏画面的问题 → 传 `"auto_screenshot": true`
+  - **不需要截图**的场景：用户直接问角色强度、技能机制、养成建议等纯文字问题（如「初雪强度如何」「XX值不值得练」）→ 不传或传 `false`
+- `game_id` 参数可选；若缺省且有截图，系统会自动识别游戏
+
+### 屏幕视觉调用示例
+用户说「帮我看看屏幕上有什么」「看看我现在的画面」「屏幕上显示了什么」「截屏」「截个图」时：
+```tool
+{"agentType":"mcp","service_name":"screen_vision","tool_name":"look_screen","query":"帮我看看屏幕上有什么"}
+```
+
+### 游戏攻略调用示例
+纯文字问题（角色强度、养成建议等，不需要截图）：
+```tool
+{"agentType":"mcp","service_name":"game_guide","tool_name":"ask_guide","game_id":"arknights","query":"初雪强度如何"}
+```
+
+需要看当前画面的问题（加 auto_screenshot）：
+```tool
+{"agentType":"mcp","service_name":"game_guide","tool_name":"ask_guide","auto_screenshot":true,"query":"这关怎么打"}
+```
+
+指定 game_id + 截图：
+```tool
+{"agentType":"mcp","service_name":"game_guide","tool_name":"ask_guide","game_id":"arknights","auto_screenshot":true,"query":"这关怎么打"}
+```
+
+伤害计算：
+```tool
+{"agentType":"mcp","service_name":"game_guide","tool_name":"calculate_damage","game_id":"arknights","query":"缪尔赛思S3M3打800防DPS"}
+```
+
+配队推荐：
+```tool
+{"agentType":"mcp","service_name":"game_guide","tool_name":"get_team_recommendation","query":"7-18低配怎么组队"}
+```
