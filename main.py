@@ -2,6 +2,7 @@
 import os
 import sys
 import subprocess
+from pathlib import Path
 # Windows 控制台 UTF-8，避免打印 emoji/中文 时 UnicodeEncodeError
 if sys.platform == "win32" and hasattr(sys.stdout, "buffer"):
     try:
@@ -20,6 +21,48 @@ if os.path.exists("_internal"):
 # 检测是否在打包环境中
 # PyInstaller打包后的程序会设置sys.frozen属性
 IS_PACKAGED = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
+
+
+def _maybe_reexec_into_project_venv() -> None:
+    """在源码运行时强制使用项目虚拟环境，避免回落到系统 Python。"""
+    if IS_PACKAGED:
+        return
+
+    reexec_guard = "NAGA_PROJECT_PYTHON_ENFORCED"
+    if os.environ.get(reexec_guard) == "1":
+        return
+
+    project_root = Path(__file__).resolve().parent
+    candidates = []
+    if sys.platform == "win32":
+        candidates.extend([
+            project_root / ".venv" / "Scripts" / "python.exe",
+            project_root / "venv" / "Scripts" / "python.exe",
+        ])
+    else:
+        candidates.extend([
+            project_root / ".venv" / "bin" / "python",
+            project_root / "venv" / "bin" / "python",
+        ])
+
+    desired_python = next((path for path in candidates if path.exists()), None)
+    if desired_python is None:
+        return
+
+    current_python = Path(sys.executable).resolve()
+    desired_python = desired_python.resolve()
+    if os.path.normcase(str(current_python)) == os.path.normcase(str(desired_python)):
+        return
+
+    os.environ[reexec_guard] = "1"
+    print(
+        f"[Bootstrap] Switching interpreter from {current_python} to {desired_python}",
+        flush=True,
+    )
+    os.execv(str(desired_python), [str(desired_python), *sys.argv])
+
+
+_maybe_reexec_into_project_venv()
 
 # ── 热补丁加载 ──
 # 打包环境下，优先从补丁目录加载 .pyc/.py 模块，实现不重装的代码热更新

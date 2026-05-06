@@ -17,6 +17,7 @@ import httpx
 from system.config import get_config, get_server_port
 from apiserver.agent_directory import format_agent_directory_text, resolve_agent_descriptor
 from apiserver import naga_auth
+from apiserver.langfuse_integration import complete_tool_observation, start_tool_observation
 
 logger = logging.getLogger(__name__)
 
@@ -1151,6 +1152,41 @@ async def _send_live2d_actions(live2d_calls: List[Dict[str, Any]], session_id: s
         logger.debug(f"[AgenticLoop] Live2D动作发送失败: {e}")
 
 
+async def _execute_tool_call_with_observation(
+    call: Dict[str, Any],
+    session_id: str,
+    source_agent_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    agent_type = call.get("agentType", "")
+    observation = None
+
+    with start_tool_observation(
+        call,
+        session_id=session_id,
+        source_agent_id=source_agent_id,
+    ) as observation:
+        if agent_type == "mcp":
+            result = await _execute_mcp_call(call, source_agent_id=source_agent_id)
+        elif agent_type == "openclaw":
+            result = await _execute_openclaw_call(call, session_id)
+        elif agent_type in ("tool", "openclaw_tool"):
+            result = await _execute_openclaw_tool_call(call, source_agent_id=source_agent_id)
+        elif agent_type == "naga_control":
+            result = await _execute_naga_control(call)
+        else:
+            logger.warning(f"[AgenticLoop] 未知agentType: {agent_type}, 跳过: {call}")
+            result = {
+                "tool_call": call,
+                "result": f"未知agentType: {agent_type}",
+                "status": "error",
+                "service_name": "unknown",
+                "tool_name": "unknown",
+            }
+
+        complete_tool_observation(observation, result)
+        return result
+
+
 async def execute_tool_calls(
     tool_calls: List[Dict[str, Any]],
     session_id: str,
@@ -1163,17 +1199,7 @@ async def execute_tool_calls(
     """
     tasks = []
     for call in tool_calls:
-        agent_type = call.get("agentType", "")
-        if agent_type == "mcp":
-            tasks.append(_execute_mcp_call(call, source_agent_id=source_agent_id))
-        elif agent_type == "openclaw":
-            tasks.append(_execute_openclaw_call(call, session_id))
-        elif agent_type in ("tool", "openclaw_tool"):
-            tasks.append(_execute_openclaw_tool_call(call, source_agent_id=source_agent_id))
-        elif agent_type == "naga_control":
-            tasks.append(_execute_naga_control(call))
-        else:
-            logger.warning(f"[AgenticLoop] 未知agentType: {agent_type}, 跳过: {call}")
+        tasks.append(_execute_tool_call_with_observation(call, session_id, source_agent_id=source_agent_id))
 
     if not tasks:
         return []

@@ -1,5 +1,186 @@
+from pathlib import Path
+from typing import Any
+
 import pytest
 from fastapi.testclient import TestClient
+from tests.support.quality_gate import (
+    QualityGateConfig,
+    apply_allure_case_labels,
+    generate_quality_gate_artifacts,
+    infer_feature,
+    should_include_for_gate,
+)
+
+
+_QUALITY_GATE_STATE_ATTR = "_quality_gate_state"
+
+
+def _quality_gate_enabled(config: Any) -> bool:
+    return bool(config.getoption("--quality-gate", default=False))
+
+
+def _quality_gate_state(config: Any) -> dict[str, Any] | None:
+    return getattr(config, _QUALITY_GATE_STATE_ATTR, None)
+
+
+def _allure_reporting_enabled(config: Any) -> bool:
+    alluredir = config.getoption("--alluredir", default=None)
+    if not alluredir:
+        alluredir = config.getoption("allure_report_dir", default=None)
+    return bool(alluredir)
+
+
+def _build_gate_config(config: Any) -> QualityGateConfig:
+    return QualityGateConfig(
+        profile=str(config.getoption("--quality-gate-profile")),
+        artifacts_dir=Path(str(config.getoption("--quality-gate-artifacts-dir"))),
+        baseline_dir=Path(str(config.getoption("--quality-gate-baseline-dir"))),
+    )
+
+
+def pytest_addoption(parser):
+    group = parser.getgroup("quality-gate")
+    group.addoption(
+        "--quality-gate",
+        action="store_true",
+        default=False,
+        help="Enable local quality-gate aggregation and report emission.",
+    )
+    group.addoption(
+        "--quality-gate-profile",
+        action="store",
+        default="stub",
+        help="Quality-gate runtime profile name (default: %(default)s).",
+    )
+    group.addoption(
+        "--quality-gate-artifacts-dir",
+        action="store",
+        default="tests/artifacts/quality_gate",
+        help="Output directory for quality-gate artifacts (default: %(default)s).",
+    )
+    group.addoption(
+        "--quality-gate-baseline-dir",
+        action="store",
+        default="tests/baseline/quality_gate",
+        help="Baseline directory for quality-gate comparison (default: %(default)s).",
+    )
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "real_llm: opt-in real LLM smoke profile.")
+    if not _quality_gate_enabled(config):
+        return
+    setattr(
+        config,
+        _QUALITY_GATE_STATE_ATTR,
+        {
+            "records_by_nodeid": {},
+            "artifacts": None,
+        },
+    )
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    report = outcome.get_result()
+
+    if not _quality_gate_enabled(item.config):
+        return
+
+    marker_names = {mark.name for mark in item.iter_markers()}
+    if not should_include_for_gate(report.nodeid, marker_names):
+        return
+
+    state = _quality_gate_state(item.config)
+    if state is None:
+        return
+
+    if report.outcome == "failed":
+        longrepr = str(report.longrepr)
+        failure_reason = longrepr.strip().splitlines()[-1][:500] if longrepr else ""
+    elif report.outcome == "skipped":
+        failure_reason = str(report.longrepr).strip()[:500]
+    else:
+        failure_reason = ""
+
+    candidate = {
+        "nodeid": report.nodeid,
+        "when": report.when,
+        "outcome": report.outcome,
+        "duration": getattr(report, "duration", None),
+        "marker_names": sorted(marker_names),
+        "user_properties": list(getattr(report, "user_properties", [])),
+        "failure_reason": failure_reason,
+    }
+    quality_case_payload = None
+    for key, value in candidate["user_properties"]:
+        if key == "quality_gate_case" and isinstance(value, dict):
+            quality_case_payload = value
+
+    records_by_nodeid: dict[str, Any] = state["records_by_nodeid"]
+    existing = records_by_nodeid.get(report.nodeid)
+
+    if report.when == "call":
+        feature = str(quality_case_payload.get("feature")) if isinstance(quality_case_payload, dict) else infer_feature(
+            report.nodeid, marker_names
+        )
+        story = (
+            str(quality_case_payload.get("story"))
+            if isinstance(quality_case_payload, dict) and isinstance(quality_case_payload.get("story"), str)
+            else "correctness"
+        )
+        if feature in {"p2_api", "agentic_tool_loop", "real_llm"}:
+            apply_allure_case_labels(feature=feature, story=story)
+        records_by_nodeid[report.nodeid] = candidate
+        if _allure_reporting_enabled(item.config):
+            snapshot = generate_quality_gate_artifacts(
+                config=_build_gate_config(item.config),
+                records=list(records_by_nodeid.values()),
+                allow_baseline_bootstrap=False,
+            )
+            state["artifacts"] = snapshot
+        return
+    if report.when == "setup" and report.outcome in {"failed", "skipped"} and existing is None:
+        records_by_nodeid[report.nodeid] = candidate
+        return
+    if report.when == "teardown" and report.outcome == "failed":
+        records_by_nodeid[report.nodeid] = candidate
+
+
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    del exitstatus
+    if not _quality_gate_enabled(config):
+        return
+
+    state = _quality_gate_state(config)
+    if state is None:
+        return
+
+    records = list(state["records_by_nodeid"].values())
+    gate_config = _build_gate_config(config)
+    artifacts = generate_quality_gate_artifacts(config=gate_config, records=records)
+    state["artifacts"] = artifacts
+
+    summary = artifacts.report_payload["summary"]
+    regression = artifacts.report_payload["regression"]
+    terminalreporter.section("Quality Gate Summary", sep="-")
+    terminalreporter.write_line(
+        f"gate_result={summary['gate_result']} total={summary['total']} "
+        f"passed={summary['passed']} failed={summary['failed']} warned={summary['warned']}"
+    )
+    terminalreporter.write_line(
+        f"artifacts: {artifacts.report_path} | {artifacts.summary_path}"
+    )
+    terminalreporter.write_line(f"baseline: {artifacts.baseline_path}")
+    if regression.get("pass_rate_delta") is not None:
+        terminalreporter.write_line(f"pass_rate_delta={regression['pass_rate_delta']}")
+    if regression.get("latency_delta") is not None:
+        terminalreporter.write_line(f"latency_delta={regression['latency_delta']}")
+    if regression.get("rounds_delta") is not None:
+        terminalreporter.write_line(f"rounds_delta={regression['rounds_delta']}")
+    if artifacts.allure_attached:
+        terminalreporter.write_line("allure_attachments=enabled")
 
 
 async def _noop_async(*_args, **_kwargs):

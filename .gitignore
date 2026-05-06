@@ -157,6 +157,8 @@ coverage.xml
 
 # pytest
 .pytest_cache/
+allure-results/
+tests/artifacts/quality_gate/
 
 # mypy
 .mypy_cache/

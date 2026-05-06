@@ -19,6 +19,11 @@ from litellm import acompletion
 from fastapi import FastAPI, HTTPException
 from system.config import get_config
 from . import naga_auth
+from .langfuse_integration import (
+    complete_llm_generation_observation,
+    record_observation_error,
+    start_llm_generation_observation,
+)
 
 # 配置日志
 logger = logging.getLogger("LLMService")
@@ -143,6 +148,24 @@ class LLMService:
             "api_base": (effective_base.rstrip("/") + "/" if effective_base else None),
         }
 
+    # 不支持自定义 temperature 的模型约束表: {前缀: 强制值}
+    _TEMPERATURE_CONSTRAINTS: Dict[str, float] = {
+        "gpt-5": 1,
+    }
+
+    def _normalize_temperature(self, model_name: str, temperature: Optional[float]) -> Optional[float]:
+        """兼容不支持自定义 temperature 的模型参数约束。"""
+        if temperature is None:
+            return None
+
+        normalized_model = (model_name or "").lower()
+        for prefix, forced_value in self._TEMPERATURE_CONSTRAINTS.items():
+            if normalized_model.startswith(prefix) and temperature != forced_value:
+                logger.info(f"[LLM] 模型 {model_name} 仅支持 temperature={forced_value}，自动调整当前值 {temperature}")
+                return forced_value
+
+        return temperature
+
     async def get_response(self, prompt: str, temperature: float = 0.7) -> str:
         """为其他模块提供API调用接口（保持向后兼容，只返回 content）"""
         response = await self.get_response_with_reasoning(prompt, temperature)
@@ -156,10 +179,11 @@ class LLMService:
                 return LLMResponse(content="LLM服务不可用: 客户端初始化失败")
 
         try:
+            model_name = self._get_model_name()
             response = await acompletion(
-                model=self._get_model_name(),
+                model=model_name,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=temperature,
+                temperature=self._normalize_temperature(model_name, temperature),
                 max_tokens=get_config().api.max_tokens,
                 **self._get_llm_params()
             )
@@ -198,6 +222,7 @@ class LLMService:
         final_model = model_override or get_config().api.model
         final_base = api_base_override or get_config().api.base_url
         final_api_key = api_key_override or get_config().api.api_key
+        observation = None
 
         try:
             model_name = final_model
@@ -209,18 +234,41 @@ class LLMService:
                 # openai 或未指定: 走原有 base_url 推断逻辑
                 model_name = self._get_model_name(model_name, final_base)
 
-            response = await acompletion(
-                model=model_name,
+            max_tokens = get_config().api.max_tokens if hasattr(get_config().api, "max_tokens") else None
+            normalized_temperature = self._normalize_temperature(model_name, temperature)
+
+            with start_llm_generation_observation(
+                name="llm.chat_with_context",
                 messages=messages,
-                temperature=temperature,
-                    max_tokens=get_config().api.max_tokens if hasattr(get_config().api, 'max_tokens') else None,
-                **self._get_overridden_llm_params(final_api_key, final_base)
-            )
-            message = response.choices[0].message
-            return LLMResponse(
-                content=message.content or "", reasoning_content=getattr(message, "reasoning_content", None)
-            )
+                model=model_name,
+                metadata={
+                    "provider_hint": provider_hint,
+                    "model_override": model_override,
+                    "api_base_override": api_base_override,
+                },
+                temperature=normalized_temperature,
+                max_tokens=max_tokens,
+                stream=False,
+            ) as observation:
+                response = await acompletion(
+                    model=model_name,
+                    messages=messages,
+                    temperature=normalized_temperature,
+                    max_tokens=max_tokens,
+                    **self._get_overridden_llm_params(final_api_key, final_base)
+                )
+                message = response.choices[0].message
+                content = message.content or ""
+                reasoning_content = getattr(message, "reasoning_content", None)
+                complete_llm_generation_observation(
+                    observation,
+                    content=content,
+                    reasoning_content=reasoning_content,
+                    response=response,
+                )
+                return LLMResponse(content=content, reasoning_content=reasoning_content)
         except Exception as e:
+            record_observation_error(observation, e)
             logger.error(f"上下文聊天调用失败: {e}")
             return LLMResponse(content=f"聊天调用出错: {str(e)}")
 
@@ -261,6 +309,7 @@ class LLMService:
         #   - 连接错误 / 流中断  → 直接重试（最多 2 次）
         max_attempts = 3
         auth_retried = False
+        observation = None
 
         for attempt in range(max_attempts):
             try:
@@ -301,10 +350,11 @@ class LLMService:
                              f"api_key_prefix={str(llm_params.get('api_key', ''))[:20]}... "
                              f"api_base={llm_params.get('api_base')}")
 
+                normalized_temperature = self._normalize_temperature(model_name, temperature)
                 call_params = {
                     "model": model_name,
                     "messages": messages,
-                    "temperature": temperature,
+                    "temperature": normalized_temperature,
                     "max_tokens": get_config().api.max_tokens if hasattr(get_config().api, "max_tokens") else None,
                     "stream": True,
                     "timeout": 120,
@@ -317,52 +367,80 @@ class LLMService:
                     if get_config().api.api_format != "anthropic":
                         call_params["parallel_tool_calls"] = True
 
-                response = await acompletion(**call_params)
+                with start_llm_generation_observation(
+                    name="llm.stream_chat_with_context",
+                    messages=messages,
+                    model=model_name,
+                    metadata={
+                        "attempt": attempt,
+                        "model_override": model_override,
+                        "api_base": llm_params.get("api_base"),
+                        "tools_enabled": bool(tools),
+                    },
+                    temperature=normalized_temperature,
+                    max_tokens=call_params.get("max_tokens"),
+                    stream=True,
+                    tools=tools,
+                ) as observation:
+                    response = await acompletion(**call_params)
 
-                # 累积器：tool_calls 增量拼接
-                pending_tool_calls = {}  # {index: {id, name, arguments}}
+                    pending_tool_calls: Dict[int, Dict[str, str]] = {}
+                    collected_content_parts: List[str] = []
+                    collected_reasoning_parts: List[str] = []
 
-                async for chunk in response:
-                    if not chunk.choices:
-                        continue
+                    async for chunk in response:
+                        if not chunk.choices:
+                            continue
 
-                    delta = chunk.choices[0].delta
+                        delta = chunk.choices[0].delta
 
-                    # 处理 reasoning_content（思考过程）
-                    reasoning = getattr(delta, "reasoning_content", None)
-                    if reasoning:
-                        yield self._format_sse_chunk("reasoning", reasoning)
+                        reasoning = getattr(delta, "reasoning_content", None)
+                        if reasoning:
+                            collected_reasoning_parts.append(reasoning)
+                            yield self._format_sse_chunk("reasoning", reasoning)
 
-                    # 处理 content（正式回答）
-                    content = getattr(delta, "content", None)
-                    if content:
-                        yield self._format_sse_chunk("content", content)
+                        content = getattr(delta, "content", None)
+                        if content:
+                            collected_content_parts.append(content)
+                            yield self._format_sse_chunk("content", content)
 
-                    # 处理 tool_calls delta（原生 function calling）
-                    tc_deltas = getattr(delta, "tool_calls", None)
-                    if tc_deltas:
-                        for tc in tc_deltas:
-                            idx = tc.index
-                            if idx not in pending_tool_calls:
-                                pending_tool_calls[idx] = {"id": "", "name": "", "arguments": ""}
-                            if tc.id:
-                                pending_tool_calls[idx]["id"] = tc.id
-                            if tc.function:
-                                if tc.function.name:
-                                    pending_tool_calls[idx]["name"] = tc.function.name
-                                if tc.function.arguments:
-                                    pending_tool_calls[idx]["arguments"] += tc.function.arguments
+                        tc_deltas = getattr(delta, "tool_calls", None)
+                        if tc_deltas:
+                            for tc in tc_deltas:
+                                idx = tc.index
+                                if idx not in pending_tool_calls:
+                                    pending_tool_calls[idx] = {"id": "", "name": "", "arguments": ""}
+                                if tc.id:
+                                    pending_tool_calls[idx]["id"] = tc.id
+                                if tc.function:
+                                    if tc.function.name:
+                                        pending_tool_calls[idx]["name"] = tc.function.name
+                                    if tc.function.arguments:
+                                        pending_tool_calls[idx]["arguments"] += tc.function.arguments
 
-                # 流结束后，如果有 tool_calls，yield 一个完整事件
-                if pending_tool_calls:
-                    import json
-                    calls = [pending_tool_calls[i] for i in sorted(pending_tool_calls)]
-                    yield self._format_sse_chunk("tool_calls_native", json.dumps(calls, ensure_ascii=False))
+                    output_payload: Dict[str, Any] = {
+                        "content": "".join(collected_content_parts),
+                        "reasoning_content": "".join(collected_reasoning_parts),
+                    }
 
-                # 流式响应正常完成，跳出重试循环
-                return
+                    if pending_tool_calls:
+                        import json
+
+                        calls = [pending_tool_calls[i] for i in sorted(pending_tool_calls)]
+                        output_payload["tool_calls"] = calls
+                        yield self._format_sse_chunk("tool_calls_native", json.dumps(calls, ensure_ascii=False))
+
+                    complete_llm_generation_observation(
+                        observation,
+                        content=output_payload["content"],
+                        reasoning_content=output_payload["reasoning_content"],
+                        tool_calls=output_payload.get("tool_calls"),
+                    )
+
+                    return
 
             except litellm.AuthenticationError as e:
+                record_observation_error(observation, e)
                 _tk = naga_auth.get_access_token()
                 logger.error(f"LLM 401 诊断: attempt={attempt} is_auth={naga_auth.is_authenticated()} "
                              f"token={'set(' + _tk[:20] + '...)' if _tk else 'None'} "
@@ -386,6 +464,7 @@ class LLMService:
                 return
 
             except (litellm.APIConnectionError, litellm.ServiceUnavailableError, litellm.Timeout) as e:
+                record_observation_error(observation, e)
                 # 连接错误 / 流中断 / 超时 → 重试
                 if attempt < max_attempts - 1:
                     logger.warning(f"[LLM] 流式调用连接异常 (attempt {attempt + 1}/{max_attempts})，重试中: {e}")
@@ -397,6 +476,7 @@ class LLMService:
                 return
 
             except Exception as e:
+                record_observation_error(observation, e)
                 logger.error(f"流式聊天调用失败: {e}")
                 yield self._format_sse_chunk("content", f"流式调用出错: {str(e)}")
                 return

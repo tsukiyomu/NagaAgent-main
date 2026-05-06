@@ -30,6 +30,349 @@
 - Part 7 前端与实时通道深挖: `./p7_frontend_ui.md`
 - Part 8 基础设施与诊断深挖: `./p8_infra_engineering.md`
 
+### 0.4 用户视角工作流
+- 从用户视角看，`agentic_tool_loop` 不应理解成“代码里一堆函数怎么调用”，而应理解成一次多轮 Agent 编排：
+> 用户发一句话后，系统会在背后持续判断：
+> 是否需要工具 -> 调哪个工具 -> 工具结果怎么放回上下文 -> 是否继续追问模型 -> 什么时候停止并给用户最终回答。
+- 它不是简单的一问一答，而是围绕 `messages + tools` 持续推进的运行时循环。
+- 这条工作流横跨：
+  1. Part 2 API Layer：接住请求、做输入装配。
+  2. Part 3 Core Service Layer：执行 `run_agentic_loop(...)`。
+  3. Part 4 LLM Gateway Layer：把 `messages + tools` 传给模型。
+  4. Part 6 MCP and Tool Integration Layer：执行工具并返回结果。
+
+#### 0.4.1 用户看到的表层流程
+```text
+用户输入问题
+  -> 前端显示“正在生成”
+  -> 后端开始流式返回内容
+  -> 如果需要工具，系统内部调用工具
+  -> 模型读取工具结果后继续生成
+  -> 前端持续展示回答
+  -> 最终回答完成
+```
+
+- 用户通常只看到“AI 在持续流式回答”。
+- 但系统内部实际可能已经经历：
+```text
+解析用户意图
+  -> 判断是否需要工具
+  -> 调用对应工具
+  -> 拿到工具结果
+  -> 把工具结果回注到上下文
+  -> 让模型基于工具结果继续生成
+  -> 输出最终回答
+```
+
+#### 0.4.2 route 层在 loop 之前做什么
+- 这一阶段更准确的名字是：输入装配 / context assembly。
+- 它的目标不是把所有信息都塞给模型，而是把这次对话真正需要的输入整理好，再交给 `run_agentic_loop(...)` 去多轮推进。
+- 如果从更高一层看，这里已经进入 `context engineering` 的范围。
+- 在当前项目里，`context engineering` 不是某一个单独函数，而是一条贯穿 route 和 loop 的横切能力：
+  1. 进入 loop 前：决定“这次该让模型看到什么”。
+  2. loop 进行中：决定“哪些新信息要回注，哪些旧信息要压缩”。
+  3. summary / degrade 时：决定“保留什么上下文，禁止什么能力”。
+- route 层结束后，最关键的两类 LLM 输入是：
+  1. `messages`：当前这一轮完整上下文。
+  2. `tools`：当前模型允许调用的函数 schema。
+
+- 但 route 层产生的信息并不只有这两类，更准确地说可以分成三类：
+
+  A. 会进入 `messages` 的内容
+  这些是 LLM 需要“读”的上下文，例如：
+  ```text
+  用户 message
+  历史对话
+  system prompt
+  agent 设定
+  业务规则
+  工具使用说明
+  RAG / context 检索结果
+  skills prompt / supplement
+  ```
+
+  常见 shape 类似：
+  ```python
+  messages = [
+      {"role": "system", "content": "...系统设定 / agent 规则 / 工具说明..."},
+      {"role": "user", "content": "...用户问题..."},
+  ]
+  ```
+
+  B. 不进 `messages`，但会作为 `tools` 单独传给 LLM 的内容
+  这些描述的是“当前允许模型调用什么”，例如：
+  ```text
+  当前模型允许调用哪些工具
+  每个工具叫什么
+  参数 schema 是什么
+  这个工具需要哪些字段
+  ```
+
+  它们通常不会拼进普通文本，而是并列传给模型：
+  ```python
+  llm.chat(
+      messages=messages,
+      tools=tools,
+  )
+  ```
+
+  更准确地说：
+  ```text
+  messages = 让 LLM 读懂当前任务、背景、规则、历史
+  tools = 告诉 LLM 当前可以调用哪些函数，以及参数格式是什么
+  ```
+
+  C. 不一定给 LLM 读，只是运行时自己用的东西
+  这些更多是后端管理信息，例如：
+  ```text
+  session_id
+  active flag
+  stream id
+  telemetry
+  finalize 状态
+  ```
+
+  它们用于管理会话、流式响应、持久化和日志，但不一定进入 LLM 输入。
+  这里的 `telemetry` 需要再区分一层：
+  1. 作为 HTTP 路由暴露的 `/telemetry/*` 入口，归 Part 2 API Layer。
+  2. 作为埋点、排队、flush、上传与诊断能力本体，归 Part 8 Infra / Engineering。
+  3. 所以它会在 route 代码里出现，但架构主归属仍然是 Part 8。
+
+- 所以这里要避免一个误解：不是 route 层产生的所有信息都要塞进 LLM；只有真正影响模型理解、判断、调用工具、生成回答的信息，才应该进入 `messages` 或 `tools`。
+
+#### 0.4.3 从用户一句话开始的主链路
+```text
+用户发消息
+  -> route 层完成输入装配
+  -> 得到 messages + tools
+  -> 进入 agentic_tool_loop
+  -> 每轮调用 LLM
+  -> LLM 判断是否需要工具
+  -> 如果不需要工具：
+      直接输出最终回答，stop
+  -> 如果需要工具：
+      解析 tool call
+      标准化 tool call
+      dispatcher 调用工具
+      标准化 tool result
+      tool result 回注 messages
+      queue 信息合并进 messages
+      compression 治理 messages
+      进入下一轮
+  -> 如果连续失败或达到 max_rounds：
+      进入 summary round
+      tools=None
+      强制总结
+  -> 最终 round_end(has_more=False)
+  -> [DONE] 由底层流式链路产出并经 route 层转发
+  -> 用户看到完整回答
+```
+
+- 如果把 `context engineering` 也叠加到这条主链路里，可以理解成：
+```text
+用户发消息
+  -> route 层做 context engineering：
+     - 选历史
+     - 补 system / agent / RAG / supplement
+     - 生成或关闭 tools schema
+  -> 进入 agentic_tool_loop
+  -> LLM 判断是否需要工具
+  -> 如果有 tool call：
+     - 执行工具
+     - 回注 tool result
+     - 合并 queue
+     - 必要时 compression
+     - 更新 messages
+  -> LLM 基于更新后的上下文再判断
+  -> 必要时进入 summary：
+     - 补 summary 指令
+     - tools=None
+  -> 最终输出
+```
+
+- 这里的核心不是“模型调用了一次”，而是“系统维护了一轮又一轮的 `messages + tools` 状态”。
+- 因此，这层更接近一个状态机：
+  1. `round_start`
+  2. `tool_call_parse / normalize`
+  3. `tool_dispatch`
+  4. `tool_result_injected`
+  5. `next_round` 或 `stop`
+  6. 必要时进入 `summary_round`
+
+#### 0.4.4 route 和 loop 如何衔接
+```text
+routes/chat.py：
+  负责装配初始输入
+  得到 messages + tools
+
+run_agentic_loop(...)：
+  负责多轮推进
+  每轮让 LLM 读取 messages + tools
+  如果有 tool call，就执行工具并把结果回注 messages
+  然后下一轮 LLM 再读更新后的 messages
+```
+
+- 可以把这层衔接概括成：
+```text
+route 层先把“这次 LLM 需要知道什么”和“这次 LLM 能调用什么”装配好。
+其中：
+- 需要知道什么 -> messages
+- 能调用什么 -> tools
+- 运行时管理信息 -> 后端自己保存，不一定给 LLM
+
+然后 agentic_tool_loop 每一轮都让 LLM 基于 messages + tools 判断：
+- 直接回答？
+- 调用工具？
+- 继续下一轮？
+- 进入 summary？
+- 停止？
+```
+
+- 如果再压缩成一句骨架：
+```text
+Agent loop：
+  初始输入
+    -> route 层装配上下文
+    -> LLM 判断
+    -> 如果需要工具：执行工具 -> 更新上下文 -> LLM 再判断
+    -> 如果不需要工具：直接进入最终输出
+    -> 反复迭代直到收敛
+    -> 最终输出
+```
+
+- 更精确一点说：
+  1. 初始“输入 / 组装上下文”主要发生在 route 层进入 loop 之前。
+  2. 进入 loop 后，核心就是“LLM 判断 -> 工具执行 -> 更新上下文 -> 再判断”的多轮推进。
+  3. 这里的“更新上下文”主要指 tool result 回注、queue 合并、compression 改写，以及必要时补入 summary 指令。
+  4. `context engineering` 不是只发生在最开始那一次装配，而是每一轮都在参与决定“模型下一轮到底看到什么”。
+
+#### 0.4.5 为什么工具调用成功后还要下一轮
+- 工具调用成功后，系统通常不会直接把原始工具结果丢给用户。
+- 更常见的流程是：
+```text
+tool result
+  -> 注入 messages
+  -> 下一轮 LLM 读取工具结果
+  -> 生成面向用户的自然语言回答
+```
+- 所以 `tool_result_injected` 的关键意义不是“工具执行完了”，而是“工具结果已经变成下一轮模型可消费的上下文”。
+
+#### 0.4.6 native tools 支持判断是什么意思
+- 这一层可以理解成：当前模型能不能直接使用 function calling / tool calling 这种原生工具调用能力。
+- 它解决的不是“工具要不要执行”，而是“模型如何把工具调用意图返回给后端”。
+- 如果支持 native function calling：
+  ```python
+  llm.chat(messages=messages, tools=tools)
+  ```
+  模型可能直接返回结构化 tool call。
+- 如果不支持 native function calling：
+  ```python
+  llm.chat(messages=messages, tools=None)
+  ```
+  系统通常会把工具调用说明写进 prompt，让模型输出文本格式 tool call，然后再由后端解析：
+  ```python
+  parse_tool_calls_from_text(...)
+  ```
+
+- 因此当前项目实际上存在两条路径：
+```text
+native function calling 路径：
+  tools schema 直接传给模型
+  模型返回结构化 tool call
+
+text parsing 路径：
+  工具说明写进 messages / prompt
+  模型用文本格式输出 tool call
+  后端再解析文本
+```
+
+- 两条路径的差异，也可以更直白地理解成：
+  不支持 native：
+  ```text
+  你要在 prompt 里告诉模型：
+  “如果要调用工具，请按这个 JSON 模板输出”
+    -> 模型按文本输出 tool_call
+    -> 后端从普通文本里提取 tool_call
+    -> 解析 JSON
+    -> 校验字段
+    -> 标准化为 dispatch contract
+  ```
+
+  支持 native：
+  ```text
+  后端直接把 tools schema 作为结构化参数传给模型
+    -> 模型如果要调用工具，会返回结构化 tool_calls 字段
+    -> 后端读取 tool_calls
+    -> 转换为内部 dispatch contract
+  ```
+
+- 所以可以把 native function calling 的工程价值概括成：
+> native function calling 把“让模型按模板写 tool_call + 后端从文本里抠 tool_call”这部分，变成了模型 API 原生支持的结构化交互。
+
+- 但它并不会替后端完成真正的工具执行链路。即使支持 native function calling，后端仍然需要负责：
+  1. 定义 `tools schema`
+  2. 判断当前模型是否支持 native tools
+  3. 把 `tools` 传给 LLM
+  4. 读取模型返回的 `tool_calls`
+  5. 把 native `tool_calls` 转成内部统一 dispatch 格式
+  6. 校验 `tool_name / args / 权限`
+  7. 调 dispatcher / executor / MCP
+  8. 标准化 `tool_result`
+  9. 把 `tool_result` 回注 `messages`
+  10. 控制 `max_rounds / summary / failure` 收敛
+
+- 也就是说，native function calling 主要减少的是：
+  ```text
+  prompt 模板约束成本
+  文本格式漂移风险
+  JSON 提取风险
+  tool fence 解析风险
+  模型没按模板输出的风险
+  ```
+- 但它不会省掉：
+  ```text
+  tools schema 设计
+  tool call 标准化
+  工具执行
+  结果回注
+  错误处理
+  多轮收敛
+  ```
+- 一句话总结：
+> native function calling 不是替你执行工具，而是替你把“工具调用意图”以更稳定的结构化方式返回；真正的执行权、校验权、回注权和收敛控制权仍然在后端。
+
+#### 0.4.7 工具失败时为什么不会卡死
+- 用户视角里，工具失败不应表现为系统无限重试或直接炸掉。
+- 当前项目期望的收敛逻辑是：
+  1. 单次 tool error：只增加 failure count，不直接打断整个 loop。
+  2. 连续失败达到阈值：进入 `summary_round`。
+  3. 达到 `max_rounds` 且仍有 tool call：也进入 `summary_round`。
+- 这层的核心目标不是“保证工具一定成功”，而是“保证异常情况下仍能收敛到可解释终态”。
+
+#### 0.4.8 summary round 是什么
+- `summary_round` 可以理解成：系统决定不再无限调用工具，而是强制模型基于已有上下文给出最终总结。
+- 它的关键动作是：
+```text
+tools = None
+```
+- 这意味着：
+  1. 这一轮不再允许模型继续调工具。
+  2. 模型必须根据已有 `messages` 总结输出。
+
+#### 0.4.9 queue 和 compression 在用户视角里的含义
+- `queue`：
+  1. 可以理解成对话过程中从侧路进来的补充消息。
+  2. 它不会作为独立输入直接传给模型。
+  3. 它会在工具轮结束后、下一轮 LLM 调用前 `drain()`，再合并进下一轮 `messages`。
+
+- `compression`：
+  1. 可以理解成“上下文太长时，对历史消息做压缩治理”。
+  2. 它不是新增一个独立输入。
+  3. 它会直接改写当前 `messages`，然后把压缩后的结果传给 LLM。
+
+#### 0.4.10 一句话总结
+- route 层的具体实现可以理解为一次输入编排：它把用户消息、历史上下文、system prompt、agent 设定、RAG/context、工具说明等组装成 LLM 可读取的 `messages`，同时根据模型能力生成或关闭 `tools` schema。后面的 `agentic_tool_loop` 每轮都会让 LLM 基于 `messages + tools` 判断是否直接回答、是否调用工具、是否继续下一轮或进入 summary。也就是说，LLM 不是只读一次，而是每一轮都读取被更新后的上下文；代码负责装配、回注、压缩、收敛和约束。
+
 ## 1. Startup and Runtime Orchestration
 
 ### 1.1 Function

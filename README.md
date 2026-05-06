@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <div align="center">
 
 # NagaAgent
@@ -753,7 +752,3 @@ python main.py --quick-check              # 快速检查
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=RTGS2017/NagaAgent&type=date&legend=top-left)](https://www.star-history.com/#RTGS2017/NagaAgent&type=date&legend=top-left)
-=======
-# NaGaAgent_Testing
-NaGaAgent_Testing
->>>>>>> 0d6ccad (Initial commit)
