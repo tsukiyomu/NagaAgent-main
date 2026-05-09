@@ -1,0 +1,15 @@
+{
+  "baseline_version": "2026-05-06",
+  "run_id": "2026-05-06T03:14:18+00:00",
+  "profile": "real_llm",
+  "case_count": 4,
+  "pass_rate": 1.0,
+  "tool_selection_acc": 1.0,
+  "context_usage_acc": 1.0,
+  "avg_rounds": null,
+  "ttfb_p95_ms": null,
+  "total_latency_p95_ms": null,
+  "retry_count": 0,
+  "workflow_timeout_count": 0,
+  "max_failure_rate": 0.0
+}
