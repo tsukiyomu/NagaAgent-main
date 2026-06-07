@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -161,6 +161,50 @@ def update_observation(observation: Any | None, **kwargs: Any) -> None:
         logger.debug("[Langfuse] Failed to update observation: %s", exc)
 
 
+def propagate_langfuse_attributes(
+    *,
+    session_id: str | None = None,
+    user_id: str | None = None,
+    metadata: Dict[str, str] | None = None,
+    version: str | None = None,
+    tags: List[str] | None = None,
+    trace_name: str | None = None,
+):
+    """Propagate supported trace-level attributes to child observations.
+
+    Langfuse sessions are implemented via attribute propagation rather than
+    observation constructor kwargs in the Python SDK.
+    """
+    client = get_langfuse_client()
+    if client is None:
+        return nullcontext(None)
+
+    propagate_kwargs: Dict[str, Any] = {}
+    if session_id:
+        propagate_kwargs["session_id"] = session_id
+    if user_id:
+        propagate_kwargs["user_id"] = user_id
+    if metadata:
+        propagate_kwargs["metadata"] = metadata
+    if version:
+        propagate_kwargs["version"] = version
+    if tags:
+        propagate_kwargs["tags"] = tags
+    if trace_name:
+        propagate_kwargs["trace_name"] = trace_name
+
+    if not propagate_kwargs:
+        return nullcontext(None)
+
+    try:
+        from langfuse import propagate_attributes
+
+        return propagate_attributes(**propagate_kwargs)
+    except Exception as exc:
+        logger.debug("[Langfuse] Failed to propagate attributes: %s", exc)
+        return nullcontext(None)
+
+
 def build_langfuse_model_parameters(
     *,
     temperature: Optional[float],
@@ -275,6 +319,7 @@ def get_langfuse_tool_observation_name(call: Dict[str, Any]) -> str:
     return f"tool.{agent_type}"
 
 
+@contextmanager
 def start_tool_observation(
     call: Dict[str, Any],
     *,
@@ -287,16 +332,18 @@ def start_tool_observation(
     with the dispatcher/executor boundary that the runtime actually uses.
     """
     agent_type = str(call.get("agentType") or "").strip()
-    return start_observation(
-        name=get_langfuse_tool_observation_name(call),
-        as_type="tool",
-        input=compact_langfuse_payload(call),
-        metadata={
-            "session_id": session_id,
-            "source_agent_id": source_agent_id,
-            "agent_type": agent_type,
-        },
-    )
+    with propagate_langfuse_attributes(session_id=session_id):
+        with start_observation(
+            name=get_langfuse_tool_observation_name(call),
+            as_type="tool",
+            input=compact_langfuse_payload(call),
+            metadata={
+                "session_id": session_id,
+                "source_agent_id": source_agent_id,
+                "agent_type": agent_type,
+            },
+        ) as observation:
+            yield observation
 
 
 def complete_tool_observation(observation: Any | None, result: Dict[str, Any]) -> None:
@@ -331,3 +378,16 @@ def shutdown_langfuse() -> None:
             client.shutdown()
     except Exception as exc:
         logger.debug("[Langfuse] Shutdown failed: %s", exc)
+
+
+def flush_langfuse() -> None:
+    """Best-effort flush for request-end visibility in interactive flows."""
+    client = get_langfuse_client()
+    if client is None:
+        return
+
+    try:
+        if hasattr(client, "flush"):
+            client.flush()
+    except Exception as exc:
+        logger.debug("[Langfuse] Flush failed: %s", exc)

@@ -88,8 +88,9 @@ class _ChunkedStreamLLM:
         _temperature=0.7,
         model_override=None,
         tools=None,
+        session_id=None,
     ):
-        del model_override, tools
+        del model_override, tools, session_id
         for chunk in self._chunks:
             yield chunk
 

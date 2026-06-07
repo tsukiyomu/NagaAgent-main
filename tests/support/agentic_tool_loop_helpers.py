@@ -52,6 +52,7 @@ class ScriptedStreamLLM:
         _temperature=0.7,
         model_override=None,
         tools=None,
+        session_id=None,
     ):
         # This fake LLM ignores model_override because tests only care about
         # loop behavior, not model routing.
@@ -68,6 +69,7 @@ class ScriptedStreamLLM:
             {
                 "messages": copy.deepcopy(messages),
                 "tools": tools,
+                "session_id": session_id,
             }
         )
 

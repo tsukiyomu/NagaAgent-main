@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""Unit tests for quality-gate summary decisions.
+
+These tests do not run real pytest sessions. They feed the summary builder with
+small synthetic records so gate logic can be checked deterministically.
+"""
+
 import json
 from pathlib import Path
 
@@ -24,6 +30,13 @@ def _record(
     retry_count: int = 0,
     workflow_timeout_count: int = 0,
 ) -> dict:
+    """Build the minimum record shape expected by `generate_quality_gate_artifacts`.
+
+    The helper mirrors the subset of pytest report data that the quality-gate
+    layer consumes, so these tests can stay focused on gate decisions instead of
+    full pytest collection/execution.
+    """
+
     return {
         "nodeid": nodeid,
         "when": "call",
@@ -57,10 +70,18 @@ def _record(
 
 
 def _baseline_path(base_dir: Path, profile: str = "stub") -> Path:
+    """Keep baseline file naming aligned with the production summary code."""
+
     return base_dir / f"{profile}_main.json"
 
 
 def _write_baseline(path: Path, *, pass_rate: float, ttfb: float, latency: float, avg_rounds: float) -> None:
+    """Write one compact baseline snapshot for regression comparisons.
+
+    Tests only need the fields that influence pass/warn/fail transitions, so
+    the payload stays intentionally smaller than a full real artifact.
+    """
+
     payload = {
         "baseline_version": "2026-05-05",
         "run_id": "2026-05-05T00:00:00+00:00",
@@ -81,6 +102,8 @@ def _write_baseline(path: Path, *, pass_rate: float, ttfb: float, latency: float
 
 
 def _run_gate(tmp_path: Path, records: list[dict]) -> dict:
+    """Run the summary builder against isolated temp artifacts and baselines."""
+
     config = QualityGateConfig(
         profile="stub",
         artifacts_dir=tmp_path / "artifacts",
@@ -91,6 +114,8 @@ def _run_gate(tmp_path: Path, records: list[dict]) -> dict:
 
 
 def test_quality_gate_blocking_correctness_failure_is_fail(tmp_path: Path):
+    """Any blocking correctness failure should fail the gate immediately."""
+
     report = _run_gate(
         tmp_path,
         [
@@ -107,6 +132,8 @@ def test_quality_gate_blocking_correctness_failure_is_fail(tmp_path: Path):
 
 
 def test_quality_gate_blocking_stability_failure_is_fail(tmp_path: Path):
+    """Blocking stability regressions should fail even when the run degrades gracefully."""
+
     report = _run_gate(
         tmp_path,
         [
@@ -123,6 +150,8 @@ def test_quality_gate_blocking_stability_failure_is_fail(tmp_path: Path):
 
 
 def test_quality_gate_performance_small_regression_is_warn(tmp_path: Path):
+    """A mild performance regression should degrade to warn, not hard fail."""
+
     baseline_path = _baseline_path(tmp_path / "baseline")
     _write_baseline(
         baseline_path,
@@ -149,6 +178,8 @@ def test_quality_gate_performance_small_regression_is_warn(tmp_path: Path):
 
 
 def test_quality_gate_no_regression_is_pass(tmp_path: Path):
+    """Matching the baseline on key metrics should keep the gate green."""
+
     baseline_path = _baseline_path(tmp_path / "baseline")
     _write_baseline(
         baseline_path,
@@ -175,6 +206,12 @@ def test_quality_gate_no_regression_is_pass(tmp_path: Path):
 
 
 def test_quality_gate_bootstrap_writes_missing_baseline(tmp_path: Path):
+    """First run without a baseline should bootstrap one instead of crashing.
+
+    The exact gate result may still vary with policy, so the contract here is
+    baseline creation plus a structurally valid summary outcome.
+    """
+
     report = _run_gate(
         tmp_path,
         [

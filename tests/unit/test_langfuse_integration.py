@@ -1,5 +1,13 @@
 from __future__ import annotations
 
+"""Unit tests for the Langfuse adapter boundary.
+
+These tests stay intentionally local:
+- no real Langfuse client
+- no real network calls
+- assertions target the helper contract that call sites rely on
+"""
+
 import json
 from types import SimpleNamespace
 from typing import Any
@@ -14,6 +22,8 @@ pytestmark = [pytest.mark.unit]
 
 
 class _ObservationContext:
+    """Tiny context wrapper so tests can mimic `with observation as current:`."""
+
     def __init__(self, observation: Any):
         self._observation = observation
 
@@ -25,6 +35,8 @@ class _ObservationContext:
 
 
 class _FakeStreamResponse:
+    """Async iterable stand-in for LiteLLM streaming responses."""
+
     def __init__(self, chunks: list[Any]):
         self._chunks = chunks
 
@@ -42,6 +54,8 @@ def _build_chunk(
     reasoning: str | None = None,
     tool_calls: list[Any] | None = None,
 ):
+    """Build the minimum streaming delta shape consumed by `LLMService`."""
+
     delta = SimpleNamespace(
         content=content,
         reasoning_content=reasoning,
@@ -52,6 +66,8 @@ def _build_chunk(
 
 @pytest.fixture
 def llm_env(monkeypatch):
+    """Freeze LLM config and disable auth branches unrelated to these tests."""
+
     config = SimpleNamespace(
         api=SimpleNamespace(
             api_key="test-key",
@@ -70,7 +86,11 @@ def llm_env(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_chat_with_context_updates_langfuse_generation(llm_env, monkeypatch):
+    """Non-streaming LLM calls should write output/usage and propagate session_id."""
+
+    del llm_env
     captured_starts: list[dict[str, Any]] = []
+    captured_propagation: list[dict[str, Any]] = []
     observation = SimpleNamespace(updates=[])
 
     def _start_observation(**kwargs):
@@ -79,6 +99,10 @@ async def test_chat_with_context_updates_langfuse_generation(llm_env, monkeypatc
 
     def _update_observation(obs, **kwargs):
         obs.updates.append(kwargs)
+
+    def _propagate_attributes(**kwargs):
+        captured_propagation.append(kwargs)
+        return _ObservationContext(None)
 
     async def _fake_acompletion(**kwargs):
         del kwargs
@@ -95,6 +119,7 @@ async def test_chat_with_context_updates_langfuse_generation(llm_env, monkeypatc
         )
 
     monkeypatch.setattr(llm_service, "start_llm_generation_observation", _start_observation)
+    monkeypatch.setattr(llm_service, "propagate_langfuse_attributes", _propagate_attributes)
     monkeypatch.setattr(langfuse_integration, "update_observation", _update_observation)
     monkeypatch.setattr(llm_service, "acompletion", _fake_acompletion)
 
@@ -102,13 +127,16 @@ async def test_chat_with_context_updates_langfuse_generation(llm_env, monkeypatc
     response = await service.chat_with_context_and_reasoning_with_overrides(
         messages=[{"role": "user", "content": "hello"}],
         temperature=0.2,
+        session_id="session-llm-1",
     )
 
     assert response.content == "hello from llm"
     assert response.reasoning_content == "reasoned"
     assert captured_starts[0]["name"] == "llm.chat_with_context"
     assert captured_starts[0]["model"] == "openai/test-model"
+    assert captured_starts[0]["metadata"]["session_id"] == "session-llm-1"
     assert captured_starts[0]["stream"] is False
+    assert captured_propagation == [{"session_id": "session-llm-1"}]
     assert observation.updates == [
         {
             "output": {
@@ -122,7 +150,11 @@ async def test_chat_with_context_updates_langfuse_generation(llm_env, monkeypatc
 
 @pytest.mark.asyncio
 async def test_stream_chat_with_context_preserves_sse_and_records_output(llm_env, monkeypatch):
+    """Streaming calls should preserve SSE order and propagate session_id."""
+
+    del llm_env
     captured_starts: list[dict[str, Any]] = []
+    captured_propagation: list[dict[str, Any]] = []
     observation = SimpleNamespace(updates=[])
 
     def _start_observation(**kwargs):
@@ -131,6 +163,10 @@ async def test_stream_chat_with_context_preserves_sse_and_records_output(llm_env
 
     def _update_observation(obs, **kwargs):
         obs.updates.append(kwargs)
+
+    def _propagate_attributes(**kwargs):
+        captured_propagation.append(kwargs)
+        return _ObservationContext(None)
 
     async def _fake_acompletion(**kwargs):
         del kwargs
@@ -147,6 +183,7 @@ async def test_stream_chat_with_context_preserves_sse_and_records_output(llm_env
         )
 
     monkeypatch.setattr(llm_service, "start_llm_generation_observation", _start_observation)
+    monkeypatch.setattr(llm_service, "propagate_langfuse_attributes", _propagate_attributes)
     monkeypatch.setattr(langfuse_integration, "update_observation", _update_observation)
     monkeypatch.setattr(llm_service, "acompletion", _fake_acompletion)
 
@@ -157,13 +194,21 @@ async def test_stream_chat_with_context_preserves_sse_and_records_output(llm_env
             messages=[{"role": "user", "content": "hello"}],
             temperature=0.4,
             tools=[{"type": "function", "function": {"name": "tool__web_search"}}],
+            session_id="session-stream-1",
         )
     ]
 
     payloads = [json.loads(chunk[6:].strip()) for chunk in chunks]
-    assert [payload["type"] for payload in payloads] == ["reasoning", "content", "content", "tool_calls_native"]
+    assert [payload["type"] for payload in payloads] == [
+        "reasoning",
+        "content",
+        "content",
+        "tool_calls_native",
+    ]
     assert captured_starts[0]["name"] == "llm.stream_chat_with_context"
+    assert captured_starts[0]["metadata"]["session_id"] == "session-stream-1"
     assert captured_starts[0]["stream"] is True
+    assert captured_propagation == [{"session_id": "session-stream-1"}]
     assert observation.updates == [
         {
             "output": {
@@ -182,7 +227,10 @@ async def test_stream_chat_with_context_preserves_sse_and_records_output(llm_env
 
 
 def test_tool_observation_helpers_build_expected_name_and_status(monkeypatch):
+    """Tool helper should propagate session_id and flag errors."""
+
     captured_starts: list[dict[str, Any]] = []
+    captured_propagation: list[dict[str, Any]] = []
     observation = SimpleNamespace(updates=[])
 
     def _start_observation(**kwargs):
@@ -192,8 +240,13 @@ def test_tool_observation_helpers_build_expected_name_and_status(monkeypatch):
     def _update_observation(obs, **kwargs):
         obs.updates.append(kwargs)
 
+    def _propagate_attributes(**kwargs):
+        captured_propagation.append(kwargs)
+        return _ObservationContext(None)
+
     monkeypatch.setattr(langfuse_integration, "start_observation", _start_observation)
     monkeypatch.setattr(langfuse_integration, "update_observation", _update_observation)
+    monkeypatch.setattr(langfuse_integration, "propagate_langfuse_attributes", _propagate_attributes)
 
     call = {
         "agentType": "mcp",
@@ -229,6 +282,7 @@ def test_tool_observation_helpers_build_expected_name_and_status(monkeypatch):
             },
         }
     ]
+    assert captured_propagation == [{"session_id": "session-1"}]
     assert observation.updates == [
         {
             "output": {

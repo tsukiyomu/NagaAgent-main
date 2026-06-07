@@ -101,6 +101,8 @@
 14. [端口一览](#端口一览)
 15. [故障排除](#故障排除)
 
+测试体系与开源作品展示入口：[`docs/testing/portfolio_summary.md`](docs/testing/portfolio_summary.md)
+
 ---
 
 ## 快速开始

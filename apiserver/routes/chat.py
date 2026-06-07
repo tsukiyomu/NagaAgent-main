@@ -32,6 +32,7 @@ from apiserver.agent_directory import (
     resolve_agent_descriptor,
 )
 from apiserver import naga_auth
+from apiserver.langfuse_integration import flush_langfuse
 from apiserver.message_manager import message_manager
 from apiserver.llm_service import get_llm_service
 from apiserver.response_util import extract_message
@@ -656,7 +657,11 @@ async def chat(request: ChatRequest):
 
         # 使用整合后的LLM服务（支持 reasoning_content）
         llm_service = get_llm_service()
-        llm_response = await llm_service.chat_with_context_and_reasoning(messages, get_config().api.temperature)
+        llm_response = await llm_service.chat_with_context_and_reasoning(
+            messages,
+            get_config().api.temperature,
+            session_id=session_id,
+        )
 
         # 处理完成
         # 统一保存对话历史与日志
@@ -674,6 +679,7 @@ async def chat(request: ChatRequest):
             agent_id=request.agent_id,
             trace_id=f"chat:{session_id}",
         )
+        flush_langfuse()
 
         return ChatResponse(
             response=extract_message(llm_response.content) if llm_response.content else llm_response.content,
@@ -696,6 +702,7 @@ async def chat(request: ChatRequest):
             agent_id=request.agent_id,
             trace_id=f"chat:{session_id}" if session_id else None,
         )
+        flush_langfuse()
         raise HTTPException(status_code=500, detail=f"处理失败: {str(e)}")
 
 
@@ -1157,6 +1164,7 @@ async def chat_stream(request: ChatRequest):
                 agent_id=request.agent_id,
                 trace_id=f"chat:{session_id}",
             )
+            flush_langfuse()
 
             # ★ 通知对话结束 + 设置消息队列状态
             mq.set_conversation_active(False)
@@ -1183,6 +1191,7 @@ async def chat_stream(request: ChatRequest):
                 agent_id=request.agent_id,
                 trace_id=f"chat:{session_id}" if session_id else None,
             )
+            flush_langfuse()
             yield f"data: error:{str(e)}\n\n"
         finally:
             # ★ 确保对话结束事件一定触发，即使异常/客户端断开

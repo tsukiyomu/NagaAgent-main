@@ -244,4 +244,10 @@ vendor/openclaw/node_modules/
 /docs bakcup5.2/
 /docs -backup/
 /docs/
+!/docs/
+/docs/*
+!/docs/testing/
+/docs/testing/*
+!/docs/testing/testing_overview.md
+!/docs/testing/portfolio_summary.md
 /.codex

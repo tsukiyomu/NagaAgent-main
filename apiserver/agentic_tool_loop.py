@@ -1387,7 +1387,8 @@ async def run_agentic_loop(
 
         async for chunk in llm_service.stream_chat_with_context(messages, get_config().api.temperature,
                                                                  model_override=model_override,
-                                                                 tools=round_tools):
+                                                                 tools=round_tools,
+                                                                 session_id=session_id):
             if chunk.startswith("data: "):
                 try:
                     data_str = chunk[6:].strip()
@@ -1647,7 +1648,8 @@ async def run_agentic_loop(
         # 最终总结轮：流式输出（不传 tools，禁止再发起工具调用）
         async for chunk in llm_service.stream_chat_with_context(messages, get_config().api.temperature,
                                                                  model_override=model_override,
-                                                                 tools=None):
+                                                                 tools=None,
+                                                                 session_id=session_id):
             yield chunk
 
         yield _format_sse_event("round_end", {"round": max_rounds + 1, "has_more": False})
