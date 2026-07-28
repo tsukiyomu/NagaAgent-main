@@ -214,7 +214,6 @@ function handleSkip() {
     mode: mode.value,
   })
   emit('skip')
-  window.open('https://github.com/RTGS2017/NagaAgent.git', '_blank')
 }
 
 function openForgotPassword() {

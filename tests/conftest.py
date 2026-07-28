@@ -18,8 +18,8 @@ _QUALITY_GATE_STATE_ATTR = "_quality_gate_state"
 
 
 @pytest.fixture(autouse=True)
-def _block_pr_smoke_external_network(request, monkeypatch):
-    """Block real network connections while deterministic PR smoke tests run.
+def _block_blocking_smoke_external_network(request, monkeypatch):
+    """Block real network connections for deterministic blocking smoke tests.
 
     The smoke suite exercises FastAPI through TestClient, but all LLM, memory,
     MCP, telemetry, and observability integrations must remain stubbed. This
@@ -27,12 +27,14 @@ def _block_pr_smoke_external_network(request, monkeypatch):
     stubs and tries to contact any external or localhost service, the test fails
     at the connection attempt instead of becoming environment-dependent.
 
-    The fixture is autouse so newly added ``pr_smoke`` tests receive the same
-    protection without having to request a dedicated fixture explicitly.
+    The fixture is autouse so newly added tests marked with both ``smoke`` and
+    ``blocking`` receive the same protection without requesting it explicitly.
     """
-    # Do not alter networking for unit/integration/real-service profiles. The
-    # guard applies only to tests that explicitly opt into the PR smoke contract.
-    if request.node.get_closest_marker("pr_smoke") is None:
+    # Marker intersection defines the deterministic offline contract. CI is free
+    # to select this contract without embedding a CI environment name in tests.
+    is_smoke = request.node.get_closest_marker("smoke") is not None
+    is_blocking = request.node.get_closest_marker("blocking") is not None
+    if not (is_smoke and is_blocking):
         return
 
     # Keep the original bound methods so the one permitted internal connection
@@ -58,7 +60,8 @@ def _block_pr_smoke_external_network(request, monkeypatch):
         # RuntimeError keeps the attempted address visible in pytest's traceback,
         # making accidental LLM, Neo4j, MCP, or telemetry access easy to locate.
         raise RuntimeError(
-            f"external service access forbidden in pr_smoke: attempted connection to {target!r}"
+            "external service access forbidden in blocking smoke test: "
+            f"attempted connection to {target!r}"
         )
 
     def _guard_connect(sock, target):
@@ -366,9 +369,6 @@ def client(monkeypatch):
     monkeypatch.setattr(chat_routes, "_save_conversation_and_logs", lambda *_args, **_kwargs: None)
     # Disable telemetry emission to keep tests pure/offline.
     monkeypatch.setattr(chat_routes, "emit_telemetry", lambda *_args, **_kwargs: None)
-    # Disable observability flushing, which may otherwise contact Langfuse.
-    monkeypatch.setattr(chat_routes, "flush_langfuse", lambda: None)
-
     # TestClient context ensures startup/shutdown events are handled correctly.
     # monkeypatch automatically restores originals after fixture teardown.
     with TestClient(app) as test_client:

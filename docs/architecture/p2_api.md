@@ -169,6 +169,42 @@ flowchart TD
 因此，阅读运行映射时必须先区分“当前步骤执行了什么动作”和“该动作触达的模块归属
 哪个 Part”，不能把所有健康探测都理解成 `apiserver /health` 内部动作。
 
+### 11.0 先区分 apiserver 与 Agent Server
+
+二者是由 `main.py::ServiceManager` 分别启动的两个 FastAPI 服务，拥有不同端口和运行职责：
+
+| 服务 | 默认端口 | 当前主要职责 |
+|---|---:|---|
+| `apiserver` | `8000` | 面向客户端的统一 HTTP/SSE/WebSocket 入口；承载 `/chat`、`/chat/stream`、session、system、tools、extensions 等路由 |
+| `agentserver` | `8001` | 独立的 Agent 后台能力与运行控制服务；承载 OpenClaw、主动视觉、Heartbeat/Dogtag、旅行任务以及全量健康检查 |
+
+不能简单理解为“apiserver 只是 API，Agent Server 就是整个 Agent”。当前普通对话的核心链路
+已经集成在 `apiserver`，包括输入组装、LLM 调用入口和 `agentic_tool_loop`。Agent Server
+主要承载需要独立生命周期的后台 Agent 能力，并为跨服务诊断提供执行位置。
+
+因此，二者更准确的关系是：
+
+```text
+Client
+  -> apiserver：统一对外入口和普通对话主链路
+       -> 必要时调用 agentserver：后台 Agent 能力、运行控制、完整诊断
+       -> 必要时调用 MCP / Memory / 其他服务
+```
+
+在健康检查场景中，`apiserver /health/full` 只是对外代理入口；真正的多服务检查由
+`agentserver /health/full` 调用 `HealthChecker` 完成。
+
+这里需要区分“代码运行在哪里”和“能力在架构上属于哪里”：
+
+- `agentserver` 是 `/health/full` 当前的物理托管进程。
+- `HealthChecker` 位于共享的 `system/health_check.py`，逻辑上属于 Part 8 Infra /
+  Engineering，而不是 OpenClaw 或任务调度业务。
+- 因此，全量健康检查经由 Agent Server 执行是当前实现选择，不表示“全量健康检查是
+  Agent Server 的核心领域职责”。
+
+从当前服务职责来看，这个放置方式带有历史/控制面入口性质。未来即使把聚合入口迁移到
+独立 system service，或者直接由 apiserver 调用共享 `HealthChecker`，其诊断语义也不应改变。
+
 ### 11.1 `GET /health`：apiserver 进程内快速检查
 
 #### 11.1.1 调用链
@@ -214,7 +250,33 @@ flowchart TD
 | `websocket_connections` | `WebSocketManager.get_stats()` 汇总内存集合 | 当前 apiserver 进程记录的连接数；没有建立新的 WebSocket 连接 |
 | `timestamp` | `asyncio.get_running_loop().time()` | event loop 单调时钟值；不是业务时间或 ISO 时间 |
 
-#### 11.1.3 `/health` 明确不会执行的动作
+#### 11.1.3 monotonic time 的简单解释
+
+`asyncio.get_running_loop().time()` 返回一个持续递增的秒数。它的起点没有业务含义，
+也不能转换成“某年某月某日”。它不会因为操作系统校时而倒退，因此主要适合计算操作耗时：
+
+```python
+start = asyncio.get_running_loop().time()
+await operation()
+duration = asyncio.get_running_loop().time() - start
+```
+
+当前 `/health` 只是把这个单调时钟读数放进名为 `timestamp` 的字段。该字段可以作为一次
+进程内响应的时间读数，但不能表示健康检查发生的真实日期和时间。若需要真实时间，应改用
+UTC datetime 或 Unix timestamp。
+
+简单来说，当前 `/health` 的作用是：
+
+```text
+读取本地 WebSocket 连接状态
+  -> 加上固定的健康字段和单调时钟读数
+  -> 组装轻量 JSON 响应
+```
+
+它证明 apiserver 的 HTTP 入口能够响应并读取本地状态，不证明 Agent、LLM、MCP 或 Memory
+已经就绪。
+
+#### 11.1.4 `/health` 明确不会执行的动作
 
 `GET /health` 不会：
 
@@ -229,7 +291,7 @@ flowchart TD
 所以 `/health` 的准确定位是“P2 HTTP 入口仍可处理请求，并附带一个本地 WebSocket
 连接计数”，不是“整个 NagaAgent 已完全就绪”。
 
-#### 11.1.4 `/health` 的 Part 映射
+#### 11.1.5 `/health` 的 Part 映射
 
 | 当前步骤 | 具体动作 | 归属 Part | 说明 |
 |---|---|---|---|

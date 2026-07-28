@@ -52,11 +52,11 @@ class QualityGateArtifacts:
 def infer_feature(nodeid: str, marker_names: set[str]) -> str | None:
     """Map test node into the quality-gate scope feature buckets."""
     normalized = nodeid.replace("\\", "/")
-    if "real_llm" in marker_names or "test_chat_stream_real_llm_smoke.py" in normalized:
+    if "real_llm" in marker_names or "test_real_llm_smoke.py" in normalized:
         return "real_llm"
     if normalized.startswith("tests/smoke/"):
         return "p2_api"
-    if normalized.startswith("tests/integration/p2_api/"):
+    if normalized.startswith("tests/integration/chat_stream/"):
         return "p2_api"
     if normalized.startswith("tests/unit/agentic_tool_loop/"):
         return "agentic_tool_loop"

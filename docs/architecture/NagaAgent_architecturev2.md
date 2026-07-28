@@ -1,5 +1,38 @@
 # NagaAgent Architecture Notes
 
+```mermaid
+graph TD
+    %% 前端层
+    Frontend["Electron / PyQt5 前端<br/>Vue 3 + Vite + UnoCSS + PrimeVue + pixi-live2d-display<br/><br/>PanelView · MessageView · MindView · SkillView<br/>MarketView · ConfigView · MusicView · FloatingView<br/>ForumListView · ForumPostView · ForumQuotaView ..."]
+
+    %% 中间件层
+    APIServer["API Server<br/>:8000<br/><br/>对话 / SSE<br/>工具调用<br/>上下文压缩<br/>文档上传<br/>认证代理<br/>记忆 API<br/>Skill 市场<br/>配置管理"]
+    
+    AgentServer["Agent Server<br/>:8001<br/><br/>任务调度<br/>OpenClaw"]
+    
+    VoiceService["Voice Service<br/>:5048<br/><br/>TTS / ASR<br/>实时语音"]
+
+    %% 连接关系
+    Frontend --> APIServer
+    Frontend --> AgentServer
+    Frontend --> VoiceService
+
+    %% 下层服务
+    OpenClawGateway["OpenClaw<br/>Gateway<br/>:20789"]
+    AgentServer --> OpenClawGateway
+
+    MCPServer["MCP Server<br/>:8003<br/><br/>工具注册<br/>Agent 发现<br/>并行调度"]
+    APIServer --> MCPServer
+
+    MCPAgents["MCP Agents (可插拔)<br/><br/>天气 | 搜索 | 抓取 | 视觉<br/>启动器 | 攻略 | 文档 | MQTT"]
+    MCPServer --> MCPAgents
+
+    Neo4j["Neo4j<br/>:7687<br/><br/>知识图谱"]
+    MCPAgents --> Neo4j
+```
+
+
+
 ## Part Index
 0. Reading Guide
 1. Startup and Runtime Orchestration

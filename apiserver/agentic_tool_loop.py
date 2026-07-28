@@ -17,7 +17,6 @@ import httpx
 from system.config import get_config, get_server_port
 from apiserver.agent_directory import format_agent_directory_text, resolve_agent_descriptor
 from apiserver import naga_auth
-from apiserver.langfuse_integration import complete_tool_observation, start_tool_observation
 
 logger = logging.getLogger(__name__)
 
@@ -1152,41 +1151,6 @@ async def _send_live2d_actions(live2d_calls: List[Dict[str, Any]], session_id: s
         logger.debug(f"[AgenticLoop] Live2D动作发送失败: {e}")
 
 
-async def _execute_tool_call_with_observation(
-    call: Dict[str, Any],
-    session_id: str,
-    source_agent_id: Optional[str] = None,
-) -> Dict[str, Any]:
-    agent_type = call.get("agentType", "")
-    observation = None
-
-    with start_tool_observation(
-        call,
-        session_id=session_id,
-        source_agent_id=source_agent_id,
-    ) as observation:
-        if agent_type == "mcp":
-            result = await _execute_mcp_call(call, source_agent_id=source_agent_id)
-        elif agent_type == "openclaw":
-            result = await _execute_openclaw_call(call, session_id)
-        elif agent_type in ("tool", "openclaw_tool"):
-            result = await _execute_openclaw_tool_call(call, source_agent_id=source_agent_id)
-        elif agent_type == "naga_control":
-            result = await _execute_naga_control(call)
-        else:
-            logger.warning(f"[AgenticLoop] 未知agentType: {agent_type}, 跳过: {call}")
-            result = {
-                "tool_call": call,
-                "result": f"未知agentType: {agent_type}",
-                "status": "error",
-                "service_name": "unknown",
-                "tool_name": "unknown",
-            }
-
-        complete_tool_observation(observation, result)
-        return result
-
-
 async def execute_tool_calls(
     tool_calls: List[Dict[str, Any]],
     session_id: str,
@@ -1199,7 +1163,17 @@ async def execute_tool_calls(
     """
     tasks = []
     for call in tool_calls:
-        tasks.append(_execute_tool_call_with_observation(call, session_id, source_agent_id=source_agent_id))
+        agent_type = call.get("agentType", "")
+        if agent_type == "mcp":
+            tasks.append(_execute_mcp_call(call, source_agent_id=source_agent_id))
+        elif agent_type == "openclaw":
+            tasks.append(_execute_openclaw_call(call, session_id))
+        elif agent_type in ("tool", "openclaw_tool"):
+            tasks.append(_execute_openclaw_tool_call(call, source_agent_id=source_agent_id))
+        elif agent_type == "naga_control":
+            tasks.append(_execute_naga_control(call))
+        else:
+            logger.warning(f"[AgenticLoop] 未知agentType: {agent_type}, 跳过: {call}")
 
     if not tasks:
         return []
@@ -1241,6 +1215,28 @@ def format_tool_results_for_llm(results: List[Dict[str, Any]]) -> str:
             label += f": {tool}"
         parts.append(f"[工具结果 {idx}/{total} - {label} ({status})]\n{result_text}")
     return "\n\n".join(parts)
+
+
+def format_tool_result_for_display(result: Any) -> Any:
+    """保留工具原始结构，并在字符串结果中解开常见 JSON 包装。"""
+    if not isinstance(result, str):
+        return result
+
+    text = result.strip()
+    if not text:
+        return ""
+
+    try:
+        parsed = json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        return result
+
+    if isinstance(parsed, dict):
+        if "data" in parsed and parsed.get("status") in {"success", "ok"}:
+            return parsed["data"]
+        if "result" in parsed:
+            return parsed["result"]
+    return parsed
 
 
 # ---------------------------------------------------------------------------
@@ -1387,8 +1383,7 @@ async def run_agentic_loop(
 
         async for chunk in llm_service.stream_chat_with_context(messages, get_config().api.temperature,
                                                                  model_override=model_override,
-                                                                 tools=round_tools,
-                                                                 session_id=session_id):
+                                                                 tools=round_tools):
             if chunk.startswith("data: "):
                 try:
                     data_str = chunk[6:].strip()
@@ -1527,15 +1522,12 @@ async def run_agentic_loop(
         # 8. 通知前端工具结果
         result_summaries = []
         for r in results:
-            result_text = r.get("result", "")
-            # 截断过长的结果用于前端显示
-            display_result = result_text[:500] + "..." if len(result_text) > 500 else result_text
             result_summaries.append(
                 {
                     "service_name": r.get("service_name", "unknown"),
                     "tool_name": r.get("tool_name", ""),
                     "status": r.get("status", "unknown"),
-                    "result": display_result,
+                    "result": format_tool_result_for_display(r.get("result", "")),
                 }
             )
         yield _format_sse_event("tool_results", {"results": result_summaries})
@@ -1648,8 +1640,7 @@ async def run_agentic_loop(
         # 最终总结轮：流式输出（不传 tools，禁止再发起工具调用）
         async for chunk in llm_service.stream_chat_with_context(messages, get_config().api.temperature,
                                                                  model_override=model_override,
-                                                                 tools=None,
-                                                                 session_id=session_id):
+                                                                 tools=None):
             yield chunk
 
         yield _format_sse_event("round_end", {"round": max_rounds + 1, "has_more": False})

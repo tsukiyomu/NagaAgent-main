@@ -24,16 +24,16 @@
 - 某一个 Allure 报表字段或 Langfuse trace 字段的截图级说明。
 - 临时问题排查记录和一次性实验结论。
 
-### 0.3 与 testing_overview.md 的关系
+### 0.3 与 `docs/testing/architecture/overview.md` 的关系
 
-`docs/testing/testing_overview.md` 是面向阅读入口的测试总览，重点说明当前已有测试、如何运行、结果在哪里看。
+`docs/testing/architecture/overview.md` 是面向阅读入口的测试总览，重点说明当前已有测试、如何运行、结果在哪里看。
 
 `docs/testing_architecture.md` 是面向架构判断的设计文档，重点说明为什么这样分层、为什么这样替换依赖、为什么这样设置 gate。两者关系是：
 
 - `testing_architecture.md` 定义测试体系的结构和边界。
-- `testing_overview.md` 汇总当前测试资产和日常使用方式。
+- `docs/testing/architecture/overview.md` 汇总当前测试资产和日常使用方式。
 - 当新增测试层、模块边界或 gate 策略时，应优先更新本文档。
-- 当新增具体测试命令、测试文件或阅读入口时，应同步更新 `testing_overview.md`。
+- 当新增具体测试命令、测试文件或阅读入口时，应同步更新 `docs/testing/architecture/overview.md`。
 
 ## 1. 架构目标与设计原则
 
@@ -584,7 +584,7 @@ staging 失败通常说明环境组合或配置存在问题，需要结合 Langf
 
 `docs/testing_architecture.md` 回答“测试体系为什么这样设计”。
 
-`docs/testing/testing_overview.md` 回答“现在有哪些测试、怎么运行、从哪里开始看”。
+`docs/testing/architecture/overview.md` 回答“现在有哪些测试、怎么运行、从哪里开始看”。
 
 当两者内容冲突时，应以本文档作为架构意图来源，以 overview 作为当前资产入口来源，并同步修正过期部分。
 
@@ -594,22 +594,22 @@ staging 失败通常说明环境组合或配置存在问题，需要结合 Langf
 
 当前相关文档包括：
 
-- `docs/testing/testing_p2_api_2.md`：p2_api 测试目标、route 边界和 stream 测试说明。
-- `docs/testing/testing_agentic_tool_loop_4.md`：agentic_tool_loop 的 loop 控制流测试说明。
-- `docs/testing/langfuse-integration.md`：Langfuse trace、session、generation、tool observation 接入说明。
-- `docs/testing/testing_quality_gate_summary_8.md`：Quality Gate summary 的输出和使用说明。
-- `docs/testing/Allure_gateway_plan.md`：Allure 展示层和 gateway 规划。
-- `docs/testing/agent_workflow_golden_cases_plan.md`：golden cases 的规划方向。
+- `docs/testing/architecture/part-02-api-stream.md`：p2_api 测试目标、route 边界和 stream 测试说明。
+- `docs/testing/architecture/part-04-agentic-tool-loop.md`：agentic_tool_loop 的 loop 控制流测试说明。
+- `docs/testing/architecture/langfuse-observability.md`：Langfuse trace、session、generation、tool observation 接入说明。
+- `docs/testing/architecture/part-08-quality-gate-summary.md`：Quality Gate summary 的输出和使用说明。
+- `docs/testing/plans/allure-quality-reporting.md`：Allure 展示层和 gateway 规划。
+- `docs/testing/plans/golden-cases-implementation.md`：golden cases 的规划方向。
 
 ### 9.3 推荐阅读顺序
 
 推荐阅读顺序如下：
 
 1. `docs/testing_architecture.md`：先理解测试体系的架构边界。
-2. `docs/testing/testing_overview.md`：再了解当前测试资产和运行入口。
-3. `docs/testing/testing_p2_api_2.md`：理解 API 与 SSE 测试。
-4. `docs/testing/testing_agentic_tool_loop_4.md`：理解 agentic loop 单元测试。
-5. `docs/testing/langfuse-integration.md`：理解 Langfuse trace 与 session 接入。
-6. `docs/testing/testing_quality_gate_summary_8.md`：理解 gate summary 如何生成和使用。
-7. `docs/testing/Allure_gateway_plan.md`：理解展示层如何承接测试结果。
-8. `docs/testing/agent_workflow_golden_cases_plan.md`：理解后续 golden cases 扩展方向。
+2. `docs/testing/architecture/overview.md`：再了解当前测试资产和运行入口。
+3. `docs/testing/architecture/part-02-api-stream.md`：理解 API 与 SSE 测试。
+4. `docs/testing/architecture/part-04-agentic-tool-loop.md`：理解 agentic loop 单元测试。
+5. `docs/testing/architecture/langfuse-observability.md`：理解 Langfuse trace 与 session 接入。
+6. `docs/testing/architecture/part-08-quality-gate-summary.md`：理解 gate summary 如何生成和使用。
+7. `docs/testing/plans/allure-quality-reporting.md`：理解展示层如何承接测试结果。
+8. `docs/testing/plans/golden-cases-implementation.md`：理解后续 golden cases 扩展方向。

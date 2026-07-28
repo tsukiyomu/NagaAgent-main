@@ -41,4 +41,4 @@ jobs:
         run: uv sync --frozen --group test
 
       - name: Run smoke blocking tests
-        run: uv run python -m pytest tests/smoke -m "pr_smoke" -q
+        run: uv run python -m pytest tests/smoke -m "smoke and blocking" -q

@@ -155,10 +155,13 @@ coverage.xml
 *.cover
 .hypothesis/
 
-# pytest
+# pytest and generated test reports
 .pytest_cache/
 allure-results/
+allure-report/
 tests/artifacts/quality_gate/
+
+# Reviewed quality-gate baselines under tests/baseline/ remain tracked.
 
 # mypy
 .mypy_cache/
@@ -240,14 +243,3 @@ vendor/openclaw/node_modules/
 # Vendored OpenClaw source must always be tracked, even if generic rules above
 # would otherwise ignore names like media/secret/token/credential.
 !vendor/openclaw/src/**
-/docs backup5.6/
-/docs bakcup5.2/
-/docs -backup/
-/docs/
-!/docs/
-/docs/*
-!/docs/testing/
-/docs/testing/*
-!/docs/testing/testing_overview.md
-!/docs/testing/portfolio_summary.md
-/.codex

@@ -120,7 +120,7 @@ def test_quality_gate_blocking_correctness_failure_is_fail(tmp_path: Path):
         tmp_path,
         [
             _record(
-                nodeid="tests/smoke/test_p2_smoke.py::test_blocking_correctness",
+                nodeid="tests/smoke/test_api_smoke.py::test_blocking_correctness",
                 outcome="failed",
                 blocking=True,
                 final_status="failed",
@@ -138,7 +138,7 @@ def test_quality_gate_blocking_stability_failure_is_fail(tmp_path: Path):
         tmp_path,
         [
             _record(
-                nodeid="tests/integration/p2_api/test_chat_stream_resilience.py::test_midstream",
+                nodeid="tests/integration/chat_stream/test_resilience.py::test_midstream",
                 outcome="failed",
                 blocking=True,
                 final_status="degraded",
@@ -164,7 +164,7 @@ def test_quality_gate_performance_small_regression_is_warn(tmp_path: Path):
         tmp_path,
         [
             _record(
-                nodeid="tests/smoke/test_p2_smoke.py::test_perf_warn",
+                nodeid="tests/smoke/test_api_smoke.py::test_perf_warn",
                 outcome="passed",
                 blocking=True,
                 final_status="success",
@@ -192,7 +192,7 @@ def test_quality_gate_no_regression_is_pass(tmp_path: Path):
         tmp_path,
         [
             _record(
-                nodeid="tests/smoke/test_p2_smoke.py::test_perf_ok",
+                nodeid="tests/smoke/test_api_smoke.py::test_perf_ok",
                 outcome="passed",
                 blocking=True,
                 final_status="success",
@@ -216,7 +216,7 @@ def test_quality_gate_bootstrap_writes_missing_baseline(tmp_path: Path):
         tmp_path,
         [
             _record(
-                nodeid="tests/smoke/test_p2_smoke.py::test_bootstrap",
+                nodeid="tests/smoke/test_api_smoke.py::test_bootstrap",
                 outcome="passed",
                 blocking=True,
                 final_status="success",
