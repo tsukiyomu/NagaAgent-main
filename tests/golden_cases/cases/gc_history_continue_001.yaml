@@ -1,0 +1,38 @@
+case_id: gc_history_continue_001
+business_flow: BF-02
+group: context_usage
+profile: stub
+title: Current instruction overrides prior history preference
+input:
+  user_input: This time give a detailed explanation and list the reasons.
+  history:
+    - role: user
+      content: In this conversation, prefer very short answers.
+    - role: assistant
+      content: Understood. I will keep answers short by default.
+  session:
+    temporary: true
+fixtures:
+  llm_script:
+    - final_answer: The current request asks for a detailed explanation, so it overrides the older short-answer preference and includes explicit reasons.
+  tool_results: {}
+expected:
+  final_status: success
+  required_tools: []
+  forbidden_tools:
+    - tool__web_search
+    - tool__web_fetch
+  max_rounds: 1
+  required_answer_points:
+    - current request
+    - overrides
+    - older short-answer preference
+    - reasons
+  forbidden_answer_points:
+    - searched online
+    - no context available
+  summary_triggered: false
+  unhandled_exception: false
+gate:
+  blocking: true
+  baseline_compare: false

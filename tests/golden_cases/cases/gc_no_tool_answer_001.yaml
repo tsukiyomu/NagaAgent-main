@@ -1,0 +1,34 @@
+case_id: gc_no_tool_answer_001
+business_flow: BF-01
+group: no_tool
+profile: stub
+title: No-tool direct answer
+input:
+  user_input: Summarize the provided release note in one sentence.
+  history: []
+  session:
+    temporary: true
+fixtures:
+  llm_script:
+    - final_answer: The release note says the smoke gate now checks health, chat, and stream availability.
+  tool_results: {}
+expected:
+  final_status: success
+  required_tools: []
+  forbidden_tools:
+    - tool__web_search
+    - tool__web_fetch
+  max_rounds: 1
+  required_answer_points:
+    - smoke gate
+    - health
+    - chat
+    - stream
+  forbidden_answer_points:
+    - searched online
+    - external source
+  summary_triggered: false
+  unhandled_exception: false
+gate:
+  blocking: true
+  baseline_compare: false

@@ -1,0 +1,44 @@
+case_id: gc_multi_tool_search_fetch_001
+business_flow: BF-07
+group: multi_tool
+profile: stub
+title: Search result followed by page fetch
+input:
+  user_input: Find the relevant NagaAgent documentation page, fetch it, and summarize the startup command.
+  history: []
+  session:
+    temporary: true
+fixtures:
+  llm_script:
+    - tool_call: tool__web_search
+      args:
+        query: NagaAgent startup documentation
+    - tool_call: tool__web_fetch
+      args:
+        url: https://example.test/nagaagent/startup
+    - final_answer: The fetched page says the startup command is python main.py --headless.
+  tool_results:
+    tool__web_search:
+      status: success
+      result: "Result 1: https://example.test/nagaagent/startup"
+    tool__web_fetch:
+      status: success
+      result: "Startup command: python main.py --headless."
+expected:
+  final_status: success
+  required_tools:
+    - tool__web_search
+    - tool__web_fetch
+  forbidden_tools: []
+  max_rounds: 3
+  required_answer_points:
+    - fetched page
+    - python main.py --headless
+  forbidden_answer_points:
+    - guessed command
+    - npm start
+  summary_triggered: false
+  unhandled_exception: false
+gate:
+  blocking: true
+  baseline_compare: false

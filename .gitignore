@@ -243,3 +243,8 @@ vendor/openclaw/node_modules/
 # Vendored OpenClaw source must always be tracked, even if generic rules above
 # would otherwise ignore names like media/secret/token/credential.
 !vendor/openclaw/src/**
+/docs/
+/docs - backup26618/
+/docs bakcup5.2/
+/docs backup5.6/
+/docs -backup/
