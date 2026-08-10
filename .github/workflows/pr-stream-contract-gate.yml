@@ -1,0 +1,48 @@
+name: PR Stream Contract Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-stream-contract-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  stream-contract:
+    name: Stream Contract Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: latest
+
+      - name: Install dependencies (project + test)
+        run: uv sync --frozen --group test
+
+      - name: Run stream contract blocking tests
+        run: >-
+          uv run python -m pytest
+          tests/integration/chat_stream/test_resilience.py
+          -m "integration and blocking and not real_llm"
+          -q

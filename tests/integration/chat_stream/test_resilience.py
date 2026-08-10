@@ -393,6 +393,7 @@ def _assert_event_type_present(stream_text: str, event_type: str):
 class TestChatStreamRouteWithFakeLoop:
     """Real `/chat/stream` route, fake loop: focus on finalize and protocol safety."""
 
+    @pytest.mark.blocking
     def test_chat_stream_resilience_baseline_finishes_and_cleans_state(self, stream_env, request):
         """Happy path: ordered incremental content reaches one final [DONE]."""
         stream_env.monkeypatch.setattr(
@@ -449,6 +450,7 @@ class TestChatStreamRouteWithFakeLoop:
         assert attribution["unhandled_exception"] is False
         _assert_queue_inactive()
 
+    @pytest.mark.blocking
     def test_chat_stream_resilience_midstream_exception_returns_error_and_cleans_state(self, stream_env, request):
         """Failure path: mid-stream exception must surface error and still finalize."""
         stream_env.monkeypatch.setattr(
