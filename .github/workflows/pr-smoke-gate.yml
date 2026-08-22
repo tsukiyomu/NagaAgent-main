@@ -41,4 +41,18 @@ jobs:
         run: uv sync --frozen --group test
 
       - name: Run smoke blocking tests
-        run: uv run python -m pytest tests/smoke -m "smoke and blocking" -q
+        run: >-
+          uv run python -m pytest
+          tests/smoke
+          -m "smoke and blocking"
+          -q
+          --junitxml=tests/artifacts/closed_loop_v1/junit-smoke.xml
+
+      - name: Upload smoke JUnit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: closed-loop-v1-smoke-junit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: tests/artifacts/closed_loop_v1/junit-smoke.xml
+          if-no-files-found: error
+          retention-days: 14

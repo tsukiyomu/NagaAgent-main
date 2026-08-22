@@ -160,6 +160,7 @@ coverage.xml
 allure-results/
 allure-report/
 tests/artifacts/quality_gate/
+tests/artifacts/closed_loop_v1/
 
 # Reviewed quality-gate baselines under tests/baseline/ remain tracked.
 
