@@ -1,4 +1,4 @@
-name: PR Smoke Gate
+name: PR Stream Contract Gate
 
 on:
   pull_request:
@@ -14,12 +14,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: pr-smoke-gate-${{ github.ref }}
+  group: pr-stream-contract-gate-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  smoke-blocking:
-    name: Smoke Blocking Gate
+  stream-contract:
+    name: Stream Contract Gate
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -40,19 +40,19 @@ jobs:
       - name: Install dependencies (project + test)
         run: uv sync --frozen --group test
 
-      - name: Run smoke blocking tests
+      - name: Run stream contract blocking tests
         run: >-
           uv run python -m pytest
-          tests/smoke
-          -m "smoke and blocking"
+          tests/integration/chat_stream/test_resilience.py
+          -m "integration and blocking and not real_llm"
           -q
-          --junitxml=tests/artifacts/closed_loop_v1/junit-smoke.xml
+          --junitxml=tests/artifacts/closed_loop_v1/junit-stream-contract.xml
 
-      - name: Upload smoke JUnit artifact
+      - name: Upload stream contract JUnit artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: closed-loop-v1-smoke-junit-${{ github.run_id }}-${{ github.run_attempt }}
-          path: tests/artifacts/closed_loop_v1/junit-smoke.xml
+          name: closed-loop-v1-stream-contract-junit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: tests/artifacts/closed_loop_v1/junit-stream-contract.xml
           if-no-files-found: error
           retention-days: 14
