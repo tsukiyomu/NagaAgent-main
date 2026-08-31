@@ -429,7 +429,10 @@ class TestChatStreamRouteWithFakeLoop:
             "round_end",
             "done",
         ]
-        assert event_types.count("round_end") == 1
+        # C0-4 intentional-red probe: this deliberately contradicts the fixture output.
+        assert event_types.count("round_end") == 2, (
+            "C0-4 intentional red: deliberately expected two round_end events"
+        )
         _assert_sse_terminal_contract(stream_run.parsed_events, "done")
 
         report = _build_stream_report(stream_env, stream_run)
