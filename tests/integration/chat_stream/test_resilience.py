@@ -330,6 +330,7 @@ def stream_env(monkeypatch):
     import apiserver.agentic_tool_loop as agentic_tool_loop
     import apiserver.context_compressor as context_compressor
     import apiserver.llm_service as llm_service
+    import summer_memory.memory_client as memory_client
 
     _drain_conversation_active_flag()
     events = []
@@ -348,6 +349,7 @@ def stream_env(monkeypatch):
     monkeypatch.setattr(chat_routes, "build_system_prompt", lambda *args, **kwargs: "INTEG_SYSTEM_PROMPT")
     monkeypatch.setattr(chat_routes, "build_context_supplement", lambda *args, **kwargs: "INTEG_SUPPLEMENT")
     monkeypatch.setattr(chat_routes, "_supports_function_calling", lambda _model_name: False)
+    monkeypatch.setattr(memory_client, "get_remote_memory_client", lambda: None)
 
     # Silence side channels not relevant to protocol/lifecycle assertions.
     monkeypatch.setattr(chat_routes, "_update_proactive_activity_silent", _noop_async)
