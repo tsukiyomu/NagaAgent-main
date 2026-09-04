@@ -16,7 +16,7 @@
 | 当前状态 | `DONE`；下一工作单元为 MIG-2，尚未启动 |
 | 完成分布 | MIG-0～MIG-1 `DONE`；MIG-2～MIG-4 `TODO`；P3-0 暂停 |
 | 已完成执行链 | `3x green -> intentional red -> failure Artifact -> restored green` |
-| 当前证据 revision | 目标分支 `c2caa907...`；历史测试证据 `main@533d4a3...` 与隔离证据分支 `d6553a96...` |
+| 当前证据 revision | 目标分支文档迁移 commit `0cd39102`（upstream base `c2caa907...`）；历史测试证据 `main@533d4a3...` 与隔离证据分支 `d6553a96...` |
 | Gate 状态 | 目标分支：旧 Smoke/Stream workflows 尚未迁移，按 `NOT_WIRED` 处理；历史状态不自动继承 |
 | 文档发布状态 | 54 个 authored/upstream docs 已进入目标分支版本范围；4 个 Typora logs 不纳入 Git；尚未 push/PR |
 | Remote memory | 产品能力保持 `LANDED`；当前两条 SSE 契约内 `ISOLATED`；真实集成覆盖 `DELAYED` |

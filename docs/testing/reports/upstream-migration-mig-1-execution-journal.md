@@ -141,6 +141,7 @@ old evidence branch + ignored docs
 | Testing architecture entry and module docs | Added target-branch `REVIEW_NEEDED` / `NOT_WIRED` notices | Expanded beyond only overview so direct readers see the boundary |
 | Old tracked architecture docs | Restored eight missing docs from `codex/c0-4-intentional-red` | Required because branch checkout removed files tracked only in old history |
 | Authored docs and image | Added to target branch index | None |
+| Migration commit | Created `0cd39102` (`docs:migrate-testing-knowledge-onto-upstream-baseline`) | Commit uses a shell-safe no-space message because of the recorded Windows wrapper behavior |
 
 No production, Langfuse, pytest, CI workflow, dependency, secret, gate, or release file was migrated.
 
@@ -157,6 +158,7 @@ No production, Langfuse, pytest, CI workflow, dependency, secret, gate, or relea
 | Target workflow tree | only `.github/workflows/build-release.yml` | Old Smoke/Stream PR gates are correctly marked `NOT_WIRED` on target | Build-release behavior was executed |
 | Old evidence branch head check | remains `d6553a96...` | Branch creation did not rewrite the preserved evidence head | Remote branch availability beyond fetched refs |
 | `git diff --cached --check` | exit 2 on pre-existing/intentional Markdown trailing spaces and EOF blanks in migrated historical docs | Formatting debt is visible rather than hidden | It is not a product/test failure; no bulk rewrite was made |
+| Migration commit | `0cd39102`; 52 changed paths and 14,978 insertions | Documentation and ignore rule are durably recorded on the target branch | Remote publication or code/test compatibility |
 
 Pytest was not run: MIG-1 intentionally changes only documentation and ignore hygiene, while target tests are a later migration unit.
 
@@ -188,7 +190,7 @@ or execution evidence that originally supported its claims.
 ## 16. Final Proof
 
 - Acceptance result: `DONE` — upstream-rooted branch created, authored docs tracked, editor logs excluded, stale coverage boundary visible, staged scope isolated.
-- Evidence location: this journal, migration plan, staged diff, and target branch index.
+- Evidence location: migration commit `0cd39102`, this journal, migration plan, and target branch index.
 - Gate or release effect: none.
 
 ## 17. Next Recommended Task

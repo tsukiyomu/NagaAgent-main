@@ -83,4 +83,4 @@ Explicit exclusions:
 | Run ID | Date | Selected Task | Status | Evidence | Next Recommended Task |
 |---|---|---|---|---|---|
 | UPMIG-0 | 2026-09-04 | Create and verify pre-migration source/history ZIP and journal | DONE | `F:\Programme\Agent\backups\NagaAgent-main-pre-upstream-c2caa907-2026-09-04.zip`; 794,816,514 bytes; SHA-256 `bc1534a2f5b6ea2a9d7ec317619651dcb51ee20649eb9f889eba368081e03d72`; archive list readable | MIG-1: create upstream-based branch and migrate/reconcile `docs/` |
-| UPMIG-1 | 2026-09-04 | Create upstream-based branch and migrate/reconcile authored `docs/` | DONE | `codex/upstream-langfuse-sync` starts at `c2caa907...`; 54 docs tracked, 4 generated logs excluded, no product/test/CI staged; migration boundary recorded | MIG-2: port Langfuse adapter and deterministic tests |
+| UPMIG-1 | 2026-09-04 | Create upstream-based branch and migrate/reconcile authored `docs/` | DONE | migration commit `0cd39102`; branch starts at `c2caa907...`; 54 docs tracked, 4 generated logs excluded, no product/test/CI included; migration boundary recorded | MIG-2: port Langfuse adapter and deterministic tests |
