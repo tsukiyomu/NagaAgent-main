@@ -110,6 +110,7 @@ desktop.ini
 
 # Generated documentation
 docs/_build/
+docs/**/Typora_Hook_Log.txt
 site/
 
 # macOS
