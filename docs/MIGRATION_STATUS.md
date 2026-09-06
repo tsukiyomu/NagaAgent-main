@@ -18,6 +18,10 @@ set of current upstream facts:
 symbol, module path, test result, or CI status in that file has been revalidated
 against the latest upstream code.
 
-The migration order is: documentation boundary (MIG-1), Langfuse implementation
-(MIG-2), testing/CI assets (MIG-3), then execution and baseline nomination
+The migration order is: documentation boundary (MIG-1), preserved Langfuse adapter/tests
+(MIG-2), testing/CI assets (MIG-3), then regression and baseline nomination
 (MIG-4).
+
+As of 2026-09-07, MIG-2 is complete at code/test commit `c7122124`: 58 local
+adapter cases pass. Langfuse runtime wiring and SDK dependencies remain absent;
+see the testing migration status for the verified and pending boundaries.

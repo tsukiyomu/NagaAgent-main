@@ -3,15 +3,15 @@
 > 当前目标分支：`codex/upstream-langfuse-sync`
 > 上游基线：`upstream/main@c2caa9079b9eb48129f550c43a5485231d404d3b`
 > 旧证据分支：`codex/c0-4-intentional-red@d6553a96f6987c5f58fdafddb99fc28e19c72eb0`
-> 状态日期：`2026-09-04`
+> 状态日期：`2026-09-07`
 
 全体 `docs/` 的来源边界见 [`../MIGRATION_STATUS.md`](../MIGRATION_STATUS.md)。
 
 ## 1. 这次迁移做了什么
 
 `docs/` 中的人工编写文档与图片已经迁入最新 upstream 基线所在的工作分支。
-这一步迁移的是知识、历史证据和后续计划，不等于旧分支的产品代码、pytest、GitHub Actions
-或 Langfuse 实现已经迁移完成。
+MIG-1 保存了知识、历史证据和后续计划。MIG-2 随后迁入 Langfuse adapter 与单元测试，
+在 `c7122124` 上取得 58 cases 通过证据；其余旧 pytest/GitHub Actions 尚未迁移。
 
 以下四类状态必须分开理解：
 
@@ -19,7 +19,8 @@
 |---|---|---|
 | 文档文件 | `MIGRATED` | 文档已进入目标分支的 Git 变更范围 |
 | 历史 C0 报告 | `VERIFIED_ON_SOURCE_REVISION` | 报告中的运行结果仍对其记录的旧 revision 有效 |
-| 测试/CI 在目标分支 | `NOT_YET_MIGRATED` / `NOT_WIRED` | 不能用旧报告证明新 upstream 分支已经通过相同测试 |
+| Langfuse adapter/tests | `LANDED` / 本地 `VERIFIED` | 真实 adapter + fake SDK；58 cases 通过，运行时和 CI 仍 `NOT_WIRED` |
+| 其余旧测试/CI 在目标分支 | `NOT_YET_MIGRATED` / `NOT_WIRED` | 不能用旧报告证明新 upstream 分支已经通过相同测试 |
 | 架构与计划说明 | `REVIEW_NEEDED` | 已保留，但必须随 MIG-2/MIG-3 的真实代码和测试重新核对 |
 
 ## 2. 当前代码与证据边界
@@ -30,12 +31,14 @@
 - upstream 原有的三个根级文档：`build-windows.md`、
   `naga-network-requirements.md`、`travel-exploration-system.md`。
 - 本次迁移进入 Git 变更范围的测试架构、计划、报告、展示材料和图片。
+- `apiserver/langfuse_integration.py` 与 `tests/unit/test_langfuse_integration.py`；
+  source 的三个 helper 契约保留，并补入 context/cleanup 等回归测试。
 
 ### 目标分支当前尚未存在或尚未验证
 
-- 旧分支的 `apiserver/langfuse_integration.py` 及其 deterministic unit tests；MIG-2 处理。
+- Langfuse 的运行时调用点与 SDK 依赖：旧保留 revision 也没有这些接线；MIG-2 未恢复，环境变量本身不能启用 trace。
 - 旧分支的 pytest 分层资产、Golden Cases、Quality Gate 与 PR workflows；MIG-3 处理。
-- 新目标分支上的 pytest/CI 成功结果；MIG-4 才执行和确认。
+- 目标分支完整 pytest 回归与 CI 成功结果；MIG-4 确认。MIG-2 的局部 unit 结果不替代它们。
 - 真实 Langfuse、LLM、Remote Memory、MCP、staging 或部署验证。
 
 ## 3. 阅读规则
@@ -62,11 +65,13 @@
 |---|---|
 | 迁移进度 | [`plans/upstream-migration-plan.md`](plans/upstream-migration-plan.md) |
 | MIG-1 决策与证据 | [`reports/upstream-migration-mig-1-execution-journal.md`](reports/upstream-migration-mig-1-execution-journal.md) |
+| MIG-2 决策与证据 | [`reports/upstream-migration-mig-2-execution-journal.md`](reports/upstream-migration-mig-2-execution-journal.md) |
 | 旧 Closed Loop 结果 | 历史报告中记录的 source revision、GitHub run 和 Artifact |
 | 目标分支实现 | 当前 `codex/upstream-langfuse-sync` 代码树 |
-| 目标分支测试/CI 状态 | 后续 MIG-2～MIG-4 的实际代码、命令和运行结果 |
+| 目标分支测试/CI 状态 | MIG-2 局部 unit 证据；后续 MIG-3/MIG-4 的实际代码、命令和运行结果 |
 
 ## 6. 下一步
 
-MIG-2 只迁移 Langfuse adapter 与 deterministic tests，并重新确认新 upstream 的 LLM、tool、
-shutdown 生命周期接口。它不会自动恢复其余 pytest/CI 资产。
+MIG-2 已按原定边界完成 adapter/tests 迁移与 upstream 调用点核对。
+下一步 MIG-3 迁移兼容的测试基础设施和 CI 资产。若要启用真实 Langfuse，仍需明确恢复
+chat/LLM/tool/lifecycle 接线、SDK 版本、数据策略和集成验收；这不由 MIG-3 自动开启。

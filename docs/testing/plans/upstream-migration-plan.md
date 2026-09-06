@@ -36,7 +36,9 @@ or hiding the fact that the two Git histories have no common ancestor.
 - [DONE] MIG-1: Create `codex/upstream-langfuse-sync` from `upstream/main` and migrate/reconcile `docs/`.
   - Completed in: `UPMIG-1`
   - Evidence: branch created from exact upstream baseline; 54 authored/upstream docs are tracked in the index; four Typora logs are ignored; staged scope contains only `.gitignore` and `docs/`.
-- [TODO] MIG-2: Port and adapt the Langfuse integration and deterministic Langfuse tests.
+- [DONE] MIG-2: Port and adapt the Langfuse integration and deterministic Langfuse tests.
+  - Completed in: `UPMIG-2` (2026-09-07); code/test commit `c7122124`.
+  - Evidence: 58 adapter cases pass, including in a pytest-only isolated environment; SDK context failures and cleanup regressions reproduced and fixed. Runtime wiring remains inactive, matching the pre-existing MIG-2 boundary in `../MIGRATION_STATUS.md`.
 - [TODO] MIG-3: Port compatible testing infrastructure and CI assets against the new architecture.
 - [TODO] MIG-4: Run proportional regression, record proof boundaries, and nominate the new baseline.
 
@@ -78,9 +80,31 @@ Explicit exclusions:
 - No pytest/CI asset port or execution; that is MIG-3/MIG-4.
 - No push, PR, merge, rebase, Required Check, or release change.
 
-## 7. Progress Ledger
+## 7. MIG-2 scope and acceptance
+
+The preserved revision contains the adapter and three helper tests, but no runtime
+callers or Langfuse dependency. This unit migrates that existing boundary; it does
+not restore the historical runtime integration described as a proposal in the
+Langfuse architecture document.
+
+Acceptance:
+
+1. Port the real adapter source and preserve the three helper contracts on the target branch.
+2. Verify configuration/no-op, payload fields, context error isolation, caller
+   exception/cancellation preservation, and cleanup with deterministic tests.
+3. Keep collection and execution independent of API startup, local credentials,
+   and real SDK/LLM/Remote Memory/tool services.
+4. Inspect the upstream LLM, tool dispatcher, chat and shutdown boundaries, and
+   distinguish future wiring from current unit-level evidence.
+5. Record results and synchronize current progress and Langfuse architecture status.
+
+Exclusions: runtime call-site restoration, SDK installation/pinning, live-service
+validation, other test/CI migration, full regression, push/PR and gate-policy changes.
+
+## 8. Progress Ledger
 
 | Run ID | Date | Selected Task | Status | Evidence | Next Recommended Task |
 |---|---|---|---|---|---|
 | UPMIG-0 | 2026-09-04 | Create and verify pre-migration source/history ZIP and journal | DONE | `F:\Programme\Agent\backups\NagaAgent-main-pre-upstream-c2caa907-2026-09-04.zip`; 794,816,514 bytes; SHA-256 `bc1534a2f5b6ea2a9d7ec317619651dcb51ee20649eb9f889eba368081e03d72`; archive list readable | MIG-1: create upstream-based branch and migrate/reconcile `docs/` |
 | UPMIG-1 | 2026-09-04 | Create upstream-based branch and migrate/reconcile authored `docs/` | DONE | migration commit `0cd39102`; branch starts at `c2caa907...`; 54 docs tracked, 4 generated logs excluded, no product/test/CI included; migration boundary recorded | MIG-2: port Langfuse adapter and deterministic tests |
+| UPMIG-2 | 2026-09-07 | Port/adapt Langfuse adapter and deterministic tests; inspect upstream integration boundaries | DONE | `c7122124`; 58 passed, same identities across isolated red/green runs; runtime and CI `NOT_WIRED`; [execution record](../reports/upstream-migration-mig-2-execution-journal.md) | MIG-3: port compatible testing infrastructure and CI assets |

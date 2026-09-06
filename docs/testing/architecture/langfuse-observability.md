@@ -1,16 +1,51 @@
 ﻿# Langfuse 接入说明
 
-> **Upstream migration boundary（2026-09-04）**：本文及旧 adapter/test 证据来自
-> `d6553a96...`。目标分支 `c2caa907...` 当前尚未迁入 Langfuse adapter/tests；MIG-2 完成前，
-> 本文只作为 source-revision 设计与历史证据。详见 [`../MIGRATION_STATUS.md`](../MIGRATION_STATUS.md)。
->
-> 当前状态说明（2026-08-01）：当前 `main` 分支的 `4e6fd1d` 提交已经移除 Langfuse 的运行时接线和依赖。
-> [`langfuse_integration.py`](../../../apiserver/langfuse_integration.py) 与对应单元测试仍然保留，但当前
-> `LLMService`、`agentic_tool_loop`、chat route 和 API 生命周期都不再调用该适配层。因此，仅配置
-> `LANGFUSE_*` 环境变量不会让当前版本自动产生 trace。本文前半部分描述当前状态与推荐恢复方案；
-> 后半部分保留历史实现，作为恢复接入时的代码参考。
+> **当前迁移状态（2026-09-07）**：MIG-2 已将 adapter/tests 从 `d6553a96...` 迁入
+> upstream-based 分支，代码/测试 commit 为 `c7122124`，58 个 unit cases 已通过。
+> **运行时仍未接线**：`LLMService`、tool dispatcher、chat route 和 API lifecycle 没有调用
+> adapter，依赖清单也没有 Langfuse。因此，仅配置环境变量不会自动产生 trace。
+> 详见 [迁移状态](../MIGRATION_STATUS.md) 与 [MIG-2 执行记录](../reports/upstream-migration-mig-2-execution-journal.md)。
 
-## 0. 当前结论与推荐方案
+## MIG-2 已验证的部分
+
+Adapter 是应用与观测 SDK 之间的转换层，负责把应用字段变成 observation 参数，并隔离 SDK 的普通异常。
+它属于可观测性模块：记录 LLM/工具发生了什么，不负责执行 LLM/工具，也不负责决定 pytest 是否通过。
+本轮迁移该模块及其测试，没有恢复历史运行时接线；旧记录中的 `4e6fd1d` 移除接线状态在保留 revision
+`d6553a96...` 上仍存在，不能根据历史章节推断 MIG-2 已运行完整 trace。
+
+测试入口为 [`test_langfuse_integration.py`](../../../tests/unit/test_langfuse_integration.py)：
+20 个测试函数通过参数化展开为 58 个 cases，不代表 58 个 Agent 业务场景。
+
+| 验证组 | 对应 adapter 职责与断言 | 失败含义 |
+|---|---|---|
+| 原有三个 helper 契约 | generation 输入/输出、usage、tool count；工具名称、session 参数、error 状态 | 应用字段转换给 SDK 的契约变化 |
+| 配置与 no-op | 缺任一凭据、缺 SDK、初始化失败时返回 None；dotenv 不覆盖进程环境；初始化结果缓存 | 可选观测依赖变成必需条件或重复初始化 |
+| Context 生命周期 | SDK 创建、进入、退出失败不改变调用方正常结果；调用方异常、取消、生成器关闭保留原异常对象 | 观测层污染业务控制流或掩盖业务失败 |
+| Payload 与 update | 字符串、深度、集合截断；原输入不变；update 失败不外抛 | 已覆盖输入形状的适配/上报隔离失效 |
+| Flush / shutdown | 只使用已创建 client；shutdown 仅清理一次；flush 失败仍尝试 shutdown | 清理阶段意外初始化、重复清理或遗漏清理 |
+
+真实性边界：真实 adapter 源文件；fake SDK client/context/observation 和环境变量；API 启动、LLM、工具、
+Remote Memory、真实 Langfuse 均不参与正式隔离测试。由于 `apiserver/__init__.py` 会立即导入完整 API，
+测试用文件加载方式直接执行 adapter，而不是导入整个 package。原三个 helper 测试仍有 helper 级替换；
+新增生命周期测试通过真实 `start_observation` / `propagate_langfuse_attributes` 验证 fake SDK 边界。
+
+因此这些测试不证明 HTTP/SSE 协议、真实 SDK 兼容性、trace 上传、父子关联或 Langfuse UI 可见性。
+CI 分类为 `NOT_WIRED`：当前 workflow 没有调用本文件；本轮没有迁移全局 pytest marker/fixture 配置。
+
+## 当前 upstream 的接线核对（尚未实施）
+
+| 未来调用点 | 已查看的代码事实 | 恢复时要保留的语义 |
+|---|---|---|
+| LLM | `LLMService` 有三处 `acompletion`，流式调用位于最多三次的 retry 循环内 | observation 按实际调用/attempt 记录，不合并掉重试；不改变 SSE 输出 |
+| Tool | `execute_tool_calls` 为四类分支创建任务，随后 `asyncio.gather(..., return_exceptions=True)` | 包住单个任务并保留并发和原错误归一化；当前未知 agentType 会跳过，不能照搬旧示例改成 error result |
+| Chat | `/chat` 返回非流式响应，`/chat/stream` 返回 `StreamingResponse` | root observation 需要覆盖流的实际消费周期，不只覆盖 response 对象创建 |
+| Lifecycle | `api_server.lifespan` 管理启动和 finally 清理 | flush/shutdown 为同步函数，接线前需设计 off-loop 执行与有界退出 |
+
+仍需解决：SDK 版本与安装方式、真实 SDK 验证、runtime wiring、trace/session 父子关系与数据策略。
+`compact_langfuse_payload` 只截断，不脱敏，也不承诺总字节上限；prompt、工具结果和错误字符串仍可能含敏感信息。
+`shutdown_langfuse` 隔离异常但没有超时保证。上述边界不能因本地 unit 通过就消失。
+
+## 0. 后续恢复方案（未实施）
 
 ### 0.1 是否会让项目代码变复杂
 
@@ -128,9 +163,8 @@ acknowledgement。Langfuse 应继续作为运行时 observability layer，不作
 
 ## 历史实现参考
 
-以下章节记录 `4e6fd1d` 之前的 generation/tool 接入。章节中的“当前”指历史接入版本，不代表当前
-`main` 已启用 Langfuse。恢复接入时应以第 0 节的 root chat trace 和 motion observation 设计为目标，
-而不是原样恢复为只有 generation/tool observation 的结构。
+以下章节记录 `4e6fd1d` 之前的 generation/tool 接入。章节中的“当前”指历史接入版本，不代表
+`codex/upstream-langfuse-sync` 已启用 Langfuse。第 0 节仍是推荐恢复设计，不是 MIG-2 的已实现范围。
 
 ## 1. 功能概述
 
@@ -515,7 +549,7 @@ async def _execute_tool_call_with_observation(
 
 1. generation observation 是否按预期开始
 2. output / usage 是否按预期写回
-3. stream 场景下是否保留原始 SSE 语义
+3. stream helper 场景下是否保留 tool count 与聚合 output 字段（不证明真实 SSE 语义）
 4. tool observation 命名和错误写回是否正确
 
 ### 8.2 与 Allure 的关系

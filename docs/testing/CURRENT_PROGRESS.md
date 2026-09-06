@@ -1,6 +1,6 @@
 # Testing Current Progress
 
-> 最后更新：`2026-09-04`  
+> 最后更新：`2026-09-07`\
 > 当前计划：[`NagaAgent Upstream Migration Plan`](plans/upstream-migration-plan.md)  
 > 迁移状态真相源：[`MIGRATION_STATUS.md`](MIGRATION_STATUS.md)  
 > 暂停的后续测试计划：[`NagaAgent Final Testing Plan`](plans/nagaagent-final-testing-plan.md)  
@@ -12,19 +12,22 @@
 | 项目 | 当前状态 |
 |---|---|
 | 总体阶段 | Upstream Migration：`IN_PROGRESS`；Closed Loop V1 只在 source revision 上保持历史 `VERIFIED` |
-| 当前工作单元 | `MIG-1 — 建立 upstream 分支并迁移/reconcile docs` |
-| 当前状态 | `DONE`；下一工作单元为 MIG-2，尚未启动 |
-| 完成分布 | MIG-0～MIG-1 `DONE`；MIG-2～MIG-4 `TODO`；P3-0 暂停 |
-| 已完成执行链 | `3x green -> intentional red -> failure Artifact -> restored green` |
-| 当前证据 revision | 目标分支文档迁移 commit `0cd39102`（upstream base `c2caa907...`）；历史测试证据 `main@533d4a3...` 与隔离证据分支 `d6553a96...` |
+| 当前工作单元 | `MIG-2 — 迁移 Langfuse adapter 与确定性测试` |
+| 当前状态 | `DONE`；下一工作单元为 MIG-3，尚未启动 |
+| 完成分布 | MIG-0～MIG-2 `DONE`；MIG-3～MIG-4 `TODO`；P3-0 暂停 |
+| 已完成执行链 | 历史 C0：`3x green -> intentional red -> failure Artifact -> restored green`；本次仅验证 Langfuse adapter 本地测试 |
+| 当前证据 revision | MIG-2 代码/测试 `c7122124`（upstream base `c2caa907...`）；历史证据分支仍为 `d6553a96...` |
+| Langfuse | Adapter 与测试已迁入；58 cases 在本地和 pytest-only 隔离环境通过；运行时调用与 SDK 依赖仍未接回，不会自动产生 trace |
 | Gate 状态 | 目标分支：旧 Smoke/Stream workflows 尚未迁移，按 `NOT_WIRED` 处理；历史状态不自动继承 |
-| 文档发布状态 | 54 个 authored/upstream docs 已进入目标分支版本范围；4 个 Typora logs 不纳入 Git；尚未 push/PR |
-| Remote memory | 产品能力保持 `LANDED`；当前两条 SSE 契约内 `ISOLATED`；真实集成覆盖 `DELAYED` |
-| 最小 Closed Loop 能力 | `VERIFIED`；现有 pytest/fixture/CI/Artifact/triage/Gate Record 骨架已实际完成一条 SSE 有限闭环，可复用于新的明确业务范围 |
+| 文档发布状态 | MIG-1 文档已保存；MIG-2 进度、Langfuse 架构与执行记录已同步；尚未 push/PR |
+| Remote memory | 产品能力保留；旧证据分支两条 SSE 契约内 `ISOLATED`，目标分支这些测试待 MIG-3 迁入；真实集成覆盖 `DELAYED` |
+| 最小 Closed Loop 能力 | 旧 revision 上 `VERIFIED`；目标分支尚未重新跑通这条 SSE/CI 闭环 |
 | CD 定位 | 仓库已有跨平台 Build & GitHub Release；Personal Web 有用户提供的 CD 实践，但具体 staging/production 平台部署细节尚未在本项目验证，当前为次重点 |
-| Architecture 同步 | `REVIEW_NEEDED`；旧架构文档已迁入，但必须随 MIG-2/MIG-3 的目标代码与测试重新核对 |
+| Architecture 同步 | Langfuse 页已按 MIG-2 同步；其他旧架构文档仍为 `REVIEW_NEEDED`，待 MIG-3/MIG-4 核对 |
 
-一句话判断：**MIG-1 已完成文档迁移与证据边界标记；旧 Closed Loop、Langfuse、pytest 和 CI 结论没有自动转移到新分支。MIG-2/MIG-3 才迁移实现与测试，MIG-4 才形成新 baseline。**
+一句话判断：**Langfuse 的适配层已迁移并通过 58 个本地用例，但聊天链路尚未接入它。下一步 MIG-3 迁移其余测试/CI，MIG-4 再确认新 baseline。**
+
+本轮具体改了什么、为什么及证明边界，见 [MIG-2 执行记录](reports/upstream-migration-mig-2-execution-journal.md)。
 
 > 以下 C0 材料是 pre-migration history，证据含义仅绑定其记录的 source revision。
 
