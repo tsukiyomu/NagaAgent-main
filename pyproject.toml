@@ -66,5 +66,8 @@ build = [
     "pyinstaller>=6.18.0",
 ]
 test = [
+    "allure-pytest>=2.13.5",
     "google-genai>=1.63.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=1.0.0",
 ]

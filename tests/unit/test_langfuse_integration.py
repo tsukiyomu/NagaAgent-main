@@ -18,6 +18,8 @@ import sys
 
 import pytest
 
+pytestmark = [pytest.mark.unit]
+
 # apiserver/__init__.py eagerly imports api_server (config, routes and services).
 # Exercise the real, standalone adapter source without bootstrapping the API.
 _adapter_path = Path(__file__).resolve().parents[2] / "apiserver" / "langfuse_integration.py"

@@ -73,6 +73,32 @@ wheels = [
 ]
 
 [[package]]
+name = "allure-pytest"
+version = "2.16.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "allure-python-commons" },
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ea/31/7bde416fb98264e3e9a3025b176529c6c071d120a61be17fca4b100a4d7d/allure_pytest-2.16.0.tar.gz", hash = "sha256:3cc883595b1ce4280b0b9a5fdaa0ce3bb5cdbaa1b43c7269d8b82e825e6e107c", size = 17697, upload-time = "2026-04-27T08:34:40.254Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/19/41/7e37edaf081c01055afedb8236b6b6232e515745b7959342f801d9464834/allure_pytest-2.16.0-py3-none-any.whl", hash = "sha256:e5035a3b1f541b0c2ee566822df6fec20e0628b8536780e5bdfe39060ac0c71b", size = 12493, upload-time = "2026-04-27T08:34:39.37Z" },
+]
+
+[[package]]
+name = "allure-python-commons"
+version = "2.16.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "pluggy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d6/ad/9cd9020d194bb0fff783538096cb5cfae9d714d1f63a7c542c0e92fd822f/allure_python_commons-2.16.0.tar.gz", hash = "sha256:ecdc92bafea074bab96b5f2c4eb3100825340188f5aece608ae80eced709b36f", size = 15681, upload-time = "2026-04-27T08:34:31.138Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/53/78/ddd0affa881b1e09bc59f11ab829a7904f4bca29d25c34cbb9395e8e0061/allure_python_commons-2.16.0-py3-none-any.whl", hash = "sha256:6d42a500078aca8a2e68823075c1ffc2396987bb268d62b19af82390b205ce88", size = 16871, upload-time = "2026-04-27T08:34:29.828Z" },
+]
+
+[[package]]
 name = "altgraph"
 version = "0.17.5"
 source = { registry = "https://pypi.org/simple" }
@@ -755,6 +781,15 @@ wheels = [
 ]
 
 [[package]]
+name = "iniconfig"
+version = "2.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/72/34/14ca021ce8e5dfedc35312d08ba8bf51fdd999c576889fc2c24cb97f4f10/iniconfig-2.3.0.tar.gz", hash = "sha256:c76315c77db068650d49c5b56314774a7804df16fee4402c1f19d6d15d8c4730", size = 20503, upload-time = "2025-10-18T21:55:43.219Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cb/b1/3846dd7f199d53cb17f49cba7e651e9ce294d8497c8c150530ed11865bb8/iniconfig-2.3.0-py3-none-any.whl", hash = "sha256:f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12", size = 7484, upload-time = "2025-10-18T21:55:41.639Z" },
+]
+
+[[package]]
 name = "interchange"
 version = "2021.0.4"
 source = { registry = "https://pypi.org/simple" }
@@ -1206,7 +1241,10 @@ build = [
     { name = "pyinstaller" },
 ]
 test = [
+    { name = "allure-pytest" },
     { name = "google-genai" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
 ]
 
 [package.metadata]
@@ -1249,7 +1287,12 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 build = [{ name = "pyinstaller", specifier = ">=6.18.0" }]
-test = [{ name = "google-genai", specifier = ">=1.63.0" }]
+test = [
+    { name = "allure-pytest", specifier = ">=2.13.5" },
+    { name = "google-genai", specifier = ">=1.63.0" },
+    { name = "pytest", specifier = ">=8.0.0" },
+    { name = "pytest-asyncio", specifier = ">=1.0.0" },
+]
 
 [[package]]
 name = "neo4j"
@@ -1516,6 +1559,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/20/2e/3434380e8110b76cd9eb00a363c484b050f949b4bbe84ba770bb8508a02c/pillow-12.0.0-pp311-pypy311_pp73-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:09f2d0abef9e4e2f349305a4f8cc784a8a6c2f58a8c4892eea13b10a943bd26e", size = 5313505, upload-time = "2025-10-15T18:24:07.137Z" },
     { url = "https://files.pythonhosted.org/packages/57/ca/5a9d38900d9d74785141d6580950fe705de68af735ff6e727cb911b64740/pillow-12.0.0-pp311-pypy311_pp73-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:bdee52571a343d721fb2eb3b090a82d959ff37fc631e3f70422e0c2e029f3e76", size = 5963654, upload-time = "2025-10-15T18:24:09.579Z" },
     { url = "https://files.pythonhosted.org/packages/95/7e/f896623c3c635a90537ac093c6a618ebe1a90d87206e42309cb5d98a1b9e/pillow-12.0.0-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:b290fd8aa38422444d4b50d579de197557f182ef1068b75f5aa8558638b8d0a5", size = 6997850, upload-time = "2025-10-15T18:24:11.495Z" },
+]
+
+[[package]]
+name = "pluggy"
+version = "1.6.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f9/e2/3e91f31a7d2b083fe6ef3fa267035b518369d9511ffab804f839851d2779/pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3", size = 69412, upload-time = "2025-05-15T12:30:07.975Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746", size = 20538, upload-time = "2025-05-15T12:30:06.134Z" },
 ]
 
 [[package]]
@@ -1806,6 +1858,35 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/e7/82/28175b2414effca1cdac8dc99f76d660e7a4fb0ceefa4b4ab8f5f6742925/pyproject_hooks-1.2.0.tar.gz", hash = "sha256:1e859bd5c40fae9448642dd871adf459e5e2084186e8d2c2a79a824c970da1f8", size = 19228, upload-time = "2024-09-29T09:24:13.293Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bd/24/12818598c362d7f300f18e74db45963dbcb85150324092410c8b49405e42/pyproject_hooks-1.2.0-py3-none-any.whl", hash = "sha256:9e5c6bfa8dcc30091c74b0cf803c81fdd29d94f01992a7707bc97babb1141913", size = 10216, upload-time = "2024-09-29T09:24:11.978Z" },
+]
+
+[[package]]
+name = "pytest"
+version = "9.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "iniconfig" },
+    { name = "packaging" },
+    { name = "pluggy" },
+    { name = "pygments" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e4/47/b9efed96c114afcfa3c9d3fe98a76a1d14c74a9e266d397cf6eb64be5e01/pytest-9.1.1.tar.gz", hash = "sha256:1088fbde8f2b49d95a549a195707afa7a76a3ce9bcadc26b6d71f0ffda5fe313", size = 1636369, upload-time = "2026-06-19T10:58:32.857Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/24/25/1de2678b631f5a49215c6c96fff41ba892b0a34df68d6d80292b1b48aa7f/pytest-9.1.1-py3-none-any.whl", hash = "sha256:37a86b45efb9a47a61a36449063e8e18d0cab3161329fc099eb21783169c4f0c", size = 386536, upload-time = "2026-06-19T10:58:31.347Z" },
+]
+
+[[package]]
+name = "pytest-asyncio"
+version = "1.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/43/7c/d36d04db312ecf4298932ef77e6e4a9e8ad017906e24e34f0b0c361a2473/pytest_asyncio-1.4.0.tar.gz", hash = "sha256:c6c0d2259945122819f171a32ecea2c349ead889ee28176caaf492143424be42", size = 58514, upload-time = "2026-05-26T09:56:04.083Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/03/e2/08a497ef684b88559c9cc5f4ad53a37e7b99e727094a86d6ea32536d5d3c/pytest_asyncio-1.4.0-py3-none-any.whl", hash = "sha256:933ca923a23075a87fb7070c0ec272a6848489824d887c85c812670932835aa1", size = 16930, upload-time = "2026-05-26T09:56:02.576Z" },
 ]
 
 [[package]]

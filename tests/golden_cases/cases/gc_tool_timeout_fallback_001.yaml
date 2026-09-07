@@ -1,0 +1,38 @@
+case_id: gc_tool_timeout_fallback_001
+business_flow: BF-06
+group: tool_failure
+profile: stub
+title: Tool timeout conservative fallback
+input:
+  user_input: Search for the deployment status and tell me what is confirmed.
+  history: []
+  session:
+    temporary: true
+fixtures:
+  llm_script:
+    - tool_call: tool__web_search
+      args:
+        query: NagaAgent deployment status
+    - final_answer: The search tool timed out, so no deployment status is confirmed from this run.
+  tool_results:
+    tool__web_search:
+      status: timeout
+      error: search timed out
+expected:
+  final_status: degraded
+  required_tools:
+    - tool__web_search
+  forbidden_tools:
+    - tool__web_fetch
+  max_rounds: 2
+  required_answer_points:
+    - timed out
+    - no deployment status is confirmed
+  forbidden_answer_points:
+    - deployment succeeded
+    - confirmed online
+  summary_triggered: false
+  unhandled_exception: false
+gate:
+  blocking: true
+  baseline_compare: false

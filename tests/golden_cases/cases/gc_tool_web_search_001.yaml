@@ -1,0 +1,38 @@
+case_id: gc_tool_web_search_001
+business_flow: BF-05
+group: single_tool
+profile: stub
+title: Single web search answer synthesis
+input:
+  user_input: Search for the latest NagaAgent release note and summarize the confirmed result.
+  history: []
+  session:
+    temporary: true
+fixtures:
+  llm_script:
+    - tool_call: tool__web_search
+      args:
+        query: NagaAgent release note
+    - final_answer: The fixed search result says NagaAgent added a deterministic workflow quality gate.
+  tool_results:
+    tool__web_search:
+      status: success
+      result: "Fixed search result: NagaAgent added a deterministic workflow quality gate."
+expected:
+  final_status: success
+  required_tools:
+    - tool__web_search
+  forbidden_tools:
+    - tool__web_fetch
+  max_rounds: 2
+  required_answer_points:
+    - fixed search result
+    - deterministic workflow quality gate
+  forbidden_answer_points:
+    - unverified release date
+    - production deployment
+  summary_triggered: false
+  unhandled_exception: false
+gate:
+  blocking: true
+  baseline_compare: false

@@ -1,0 +1,15 @@
+{
+  "baseline_version": "2026-05-05",
+  "run_id": "2026-05-05T14:34:34+00:00",
+  "profile": "stub",
+  "case_count": 32,
+  "pass_rate": 1.0,
+  "tool_selection_acc": 0.5833,
+  "context_usage_acc": 0.8,
+  "avg_rounds": 1.083,
+  "ttfb_p95_ms": 2728.25,
+  "total_latency_p95_ms": 2728.25,
+  "retry_count": 0,
+  "workflow_timeout_count": 0,
+  "max_failure_rate": 0.0
+}

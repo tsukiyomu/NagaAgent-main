@@ -1,0 +1,62 @@
+name: PR Stream Contract Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-stream-contract-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  stream-contract:
+    name: Stream Contract Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NAGA_ENABLE_REAL_LLM_TESTS: "0"
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: latest
+
+      - name: Install dependencies (project + test)
+        run: uv sync --frozen --group test
+
+      - name: Run stream contract blocking tests
+        run: >-
+          uv run --frozen python -m pytest
+          -p pytest_asyncio.plugin
+          tests/integration/chat_stream/test_resilience.py
+          -m "integration and blocking and not real_llm"
+          -q
+          --junitxml=tests/artifacts/closed_loop_v1/junit-stream-contract.xml
+
+      - name: Upload stream contract JUnit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: closed-loop-v1-stream-contract-junit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: tests/artifacts/closed_loop_v1/junit-stream-contract.xml
+          if-no-files-found: error
+          retention-days: 14
