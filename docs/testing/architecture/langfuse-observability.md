@@ -5,6 +5,8 @@
 > **运行时仍未接线**：`LLMService`、tool dispatcher、chat route 和 API lifecycle 没有调用
 > adapter，依赖清单也没有 Langfuse。因此，仅配置环境变量不会自动产生 trace。
 > 详见 [迁移状态](../MIGRATION_STATUS.md) 与 [MIG-2 执行记录](../reports/upstream-migration-mig-2-execution-journal.md)。
+> MIG-3 / MIG-4 补充：这 58 个 cases 已在 `981821be` 的完整 frozen 回归中再次通过；
+> 全局 pytest 基座已迁入，但两个 PR workflow 不选择 Langfuse 单测，runtime 状态不变。
 
 ## MIG-2 已验证的部分
 
@@ -30,7 +32,8 @@ Remote Memory、真实 Langfuse 均不参与正式隔离测试。由于 `apiserv
 新增生命周期测试通过真实 `start_observation` / `propagate_langfuse_attributes` 验证 fake SDK 边界。
 
 因此这些测试不证明 HTTP/SSE 协议、真实 SDK 兼容性、trace 上传、父子关联或 Langfuse UI 可见性。
-CI 分类为 `NOT_WIRED`：当前 workflow 没有调用本文件；本轮没有迁移全局 pytest marker/fixture 配置。
+CI 分类为 `NOT_WIRED`：当前两个 PR workflow 没有调用本文件。MIG-3 已迁入全局 marker/fixture
+配置并补回 `unit` marker；MIG-4 完整回归覆盖本文件，但不等于增加了远端 Langfuse Check。
 
 ## 当前 upstream 的接线核对（尚未实施）
 

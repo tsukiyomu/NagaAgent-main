@@ -2,14 +2,15 @@
 
 ## 1. 文档定位
 
-- 文档状态：`PAUSED_BY_UPSTREAM_MIGRATION — P3-0 未启动`
+- 文档状态：`READY_FOR_REENTRY — P3-0 未启动`
 - 计划类型：`Final / Consolidated Plan（NagaAgent Basic Agent Workflow Understanding + Testing）`
 - 制定日期：`2026-09-03`
-- 修订日期：`2026-09-04（移除 Jaeger 关联，将 P3-1 改为基础 Agent Workflow 学习）`
+- 修订日期：`2026-09-07（MIG-3/MIG-4 完成本地迁移验收；未启动 P3）`
 - 当前迁移分支：`codex/upstream-langfuse-sync`
 - 当前 upstream revision：`c2caa9079b9eb48129f550c43a5485231d404d3b`
+- 当前本地测试基线：`981821be7b971c4123c8f41d7a77f176970cd872`，见 [MIG-4 报告](../reports/upstream-migration-mig-4-execution-journal.md)
 - 本计划原证据 revision：`d6553a96f6987c5f58fdafddb99fc28e19c72eb0`
-- 恢复条件：完成 [`upstream-migration-plan.md`](upstream-migration-plan.md) 的 MIG-1～MIG-4，并形成新 baseline
+- 迁移前置条件：[`upstream-migration-plan.md`](upstream-migration-plan.md) MIG-1～MIG-4 已完成，已形成新本地测试基线
 - 原始需求来源：`D:\platform\入り禁止\Artificial intelligence\NagaAgent\NagaAgentAbout.docx` 中的 `plan3 / final / Final after final`
 - 当前状态真相源：[`../CURRENT_PROGRESS.md`](../CURRENT_PROGRESS.md)
 - 价值与决策分析：[`../reports/final-testing-plan-analyze.md`](../reports/final-testing-plan-analyze.md)
@@ -17,8 +18,8 @@
 - 测试架构入口：[`../architecture/overview.md`](../architecture/overview.md)
 - 当前迁移边界：[`../MIGRATION_STATUS.md`](../MIGRATION_STATUS.md)
 
-> 本文件已迁移，但还没有在 latest upstream 上重新获得实现/执行证据。迁移期间不启动 P3-0，
-> 也不把旧分支的 `LANDED`、pytest 或 GitHub Gate 状态自动继承到新分支。
+> 新分支已完成本地回归，P3-0 可以重新进入，但本次 MIG-3/MIG-4 不执行 P3 单元。
+> 旧 GitHub Gate 状态不自动继承；新 revision 的远端 CI、Langfuse runtime 和真实外部服务仍未验证。
 
 这里的 `Final` 表示：在暂不另建新计划的阶段，本文件是 NagaAgent 测试工作的唯一后续路线图，
 后续新增范围优先作为本计划的工作单元或延期项维护。它不表示 P3-0～P3-9 已全部完成，也不表示

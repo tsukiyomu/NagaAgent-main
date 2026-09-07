@@ -22,6 +22,11 @@ The migration order is: documentation boundary (MIG-1), preserved Langfuse adapt
 (MIG-2), testing/CI assets (MIG-3), then regression and baseline nomination
 (MIG-4).
 
-As of 2026-09-07, MIG-2 is complete at code/test commit `c7122124`: 58 local
-adapter cases pass. Langfuse runtime wiring and SDK dependencies remain absent;
-see the testing migration status for the verified and pending boundaries.
+As of 2026-09-07, MIG-0 through MIG-4 are complete within the local migration scope.
+The nominated code/testing baseline is `981821be`: 179 passed, 1 skipped, 2 xfailed,
+plus 12 passed subtests in an independent frozen-lock environment. This includes
+58 adapter cases and the preserved upstream tests. Test/CI assets are now present;
+target GitHub execution, Required rules, Langfuse runtime wiring and SDK dependencies
+remain unverified or absent. Testing status and selected architecture entry points
+are reconciled; the entire historical architecture tree is not fully re-certified.
+See the testing migration status for the exact boundaries.

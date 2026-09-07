@@ -10,8 +10,9 @@
 ## 1. 这次迁移做了什么
 
 `docs/` 中的人工编写文档与图片已经迁入最新 upstream 基线所在的工作分支。
-MIG-1 保存了知识、历史证据和后续计划。MIG-2 随后迁入 Langfuse adapter 与单元测试，
-在 `c7122124` 上取得 58 cases 通过证据；其余旧 pytest/GitHub Actions 尚未迁移。
+MIG-1 保存了知识、历史证据和后续计划；MIG-2 迁入 Langfuse adapter 与单元测试。
+MIG-3 随后迁入兼容测试/CI 资产，MIG-4 在 `981821be` 完成本地回归并形成新测试基线。
+MIG-0～MIG-4 的本地迁移范围已完成；未发布到 GitHub，也未恢复 Langfuse runtime。
 
 以下四类状态必须分开理解：
 
@@ -19,37 +20,42 @@ MIG-1 保存了知识、历史证据和后续计划。MIG-2 随后迁入 Langfus
 |---|---|---|
 | 文档文件 | `MIGRATED` | 文档已进入目标分支的 Git 变更范围 |
 | 历史 C0 报告 | `VERIFIED_ON_SOURCE_REVISION` | 报告中的运行结果仍对其记录的旧 revision 有效 |
-| Langfuse adapter/tests | `LANDED` / 本地 `VERIFIED` | 真实 adapter + fake SDK；58 cases 通过，运行时和 CI 仍 `NOT_WIRED` |
-| 其余旧测试/CI 在目标分支 | `NOT_YET_MIGRATED` / `NOT_WIRED` | 不能用旧报告证明新 upstream 分支已经通过相同测试 |
-| 架构与计划说明 | `REVIEW_NEEDED` | 已保留，但必须随 MIG-2/MIG-3 的真实代码和测试重新核对 |
+| Langfuse adapter/tests | `LANDED` / 本地 `VERIFIED` | 真实 adapter + fake SDK；58 cases 随完整回归通过，运行时和对应 CI selection 仍 `NOT_WIRED` |
+| 其余测试基座 | `LANDED` / 本地 `VERIFIED` | 全套 179 passed、1 skipped、2 xfailed，另有 12 subtests passed |
+| Smoke / Stream CI 配置 | `LANDED`；远端 `UNVERIFIED_ON_TARGET` | selection 本地各通过 3 次；无新 GitHub run，Required 未确认或更改 |
+| 报告链路 | 本地 `VERIFIED` | JUnit、Allure 原始结果、32 条子集的 Quality 摘要；未晋升性能基线 |
+| 架构与计划说明 | `PARTIAL` | 新基线、CI/Langfuse 当前边界、状态入口已同步；其余历史模块说明未逐行重新认证 |
 
 ## 2. 当前代码与证据边界
 
 ### 目标分支当前真实存在
 
-- 最新 `RTGS2017/NagaAgent` 产品代码。
+- 已固定的 `RTGS2017/NagaAgent@c2caa907...` 产品代码，迁移没有覆盖其实现。
 - upstream 原有的三个根级文档：`build-windows.md`、
   `naga-network-requirements.md`、`travel-exploration-system.md`。
 - 本次迁移进入 Git 变更范围的测试架构、计划、报告、展示材料和图片。
 - `apiserver/langfuse_integration.py` 与 `tests/unit/test_langfuse_integration.py`；
   source 的三个 helper 契约保留，并补入 context/cleanup 等回归测试。
+- Smoke、SSE、Loop、Golden、归因/Quality helpers、pytest marker/fixture、两个 PR workflows。
+- collection-time offline bootstrap；产品配置逻辑保留，测试使用临时 home / 受控配置和连接护栏。
+- 独立 frozen-lock 环境的本地回归、预期失败探针和可核对的 JUnit / Allure / Quality 产物。
 
 ### 目标分支当前尚未存在或尚未验证
 
 - Langfuse 的运行时调用点与 SDK 依赖：旧保留 revision 也没有这些接线；MIG-2 未恢复，环境变量本身不能启用 trace。
-- 旧分支的 pytest 分层资产、Golden Cases、Quality Gate 与 PR workflows；MIG-3 处理。
-- 目标分支完整 pytest 回归与 CI 成功结果；MIG-4 确认。MIG-2 的局部 unit 结果不替代它们。
+- 新 revision 的 GitHub Actions / Artifact 实际运行及 Required 配置；本次没有 push / PR / 平台规则操作。
+- user-stop 与跨轮重复 tool id 去重；仍为两个原有 xfail，不计作已实现。
+- 当前版本的可信性能基线；旧 JSON 仅保留来源数值，本次独立 advisory bootstrap 不作晋升。
 - 真实 Langfuse、LLM、Remote Memory、MCP、staging 或部署验证。
 
 ## 3. 阅读规则
 
 1. `reports/closed-loop-*` 是历史执行证据。保留原 revision、run 和 Artifact 含义，
    不把它们改写为当前 upstream 结果。
-2. `architecture/` 描述的是待迁移能力模型。模块只有在新分支找到对应实现并执行代表测试后，
-   才能重新标记为目标分支上的 `LANDED/VERIFIED`。
-3. `plans/nagaagent-final-testing-plan.md` 暂不继续 P3-0；先完成 upstream migration 的
-   MIG-1～MIG-4。
-4. GitHub Gate 状态按目标分支实际 workflow 判断。当前旧 Smoke/Stream Check 不能自动继承。
+2. 当前已核对范围以 [`architecture/upstream-testing-baseline.md`](architecture/upstream-testing-baseline.md)
+   为入口。旧 Part 文档仍可帮助理解断言，但旧运行/优先级/Required 事实不能无条件继承。
+3. `plans/nagaagent-final-testing-plan.md` 已满足迁移前置条件，处于可重新进入状态；P3-0 未启动。
+4. workflow 文件只证明配置存在，远端执行和 Required 必须分别取证，不能自动继承旧 Check 状态。
 5. Langfuse 是 observability side channel，不是 pytest assertion 或 CI gate truth。
 
 ## 4. 文档迁移选择
@@ -66,12 +72,14 @@ MIG-1 保存了知识、历史证据和后续计划。MIG-2 随后迁入 Langfus
 | 迁移进度 | [`plans/upstream-migration-plan.md`](plans/upstream-migration-plan.md) |
 | MIG-1 决策与证据 | [`reports/upstream-migration-mig-1-execution-journal.md`](reports/upstream-migration-mig-1-execution-journal.md) |
 | MIG-2 决策与证据 | [`reports/upstream-migration-mig-2-execution-journal.md`](reports/upstream-migration-mig-2-execution-journal.md) |
+| MIG-3 迁移与隔离理由 | [`reports/upstream-migration-mig-3-execution-journal.md`](reports/upstream-migration-mig-3-execution-journal.md) |
+| MIG-4 回归与新基线 | [`reports/upstream-migration-mig-4-execution-journal.md`](reports/upstream-migration-mig-4-execution-journal.md) / [机器清单](reports/upstream-migration-mig-4-baseline.json) |
 | 旧 Closed Loop 结果 | 历史报告中记录的 source revision、GitHub run 和 Artifact |
 | 目标分支实现 | 当前 `codex/upstream-langfuse-sync` 代码树 |
-| 目标分支测试/CI 状态 | MIG-2 局部 unit 证据；后续 MIG-3/MIG-4 的实际代码、命令和运行结果 |
+| 目标分支测试/CI 状态 | MIG-4 本地执行证据、当前 workflow 文件；远端新 run 尚无证据 |
 
 ## 6. 下一步
 
-MIG-2 已按原定边界完成 adapter/tests 迁移与 upstream 调用点核对。
-下一步 MIG-3 迁移兼容的测试基础设施和 CI 资产。若要启用真实 Langfuse，仍需明确恢复
-chat/LLM/tool/lifecycle 接线、SDK 版本、数据策略和集成验收；这不由 MIG-3 自动开启。
+可回到 P3-0，以 `981821be` 整理基础 Agent workflow、现有测试和缺口；本次没有启动它。
+若优先启用 Langfuse，仍需恢复 chat/LLM/tool/lifecycle 接线、确定 SDK 版本与数据策略并独立验收。
+远端 CI 发布/复验也尚未执行，不由本地迁移完成状态隐含授权。

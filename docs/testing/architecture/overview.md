@@ -1,10 +1,11 @@
 ﻿# NagaAgent Testing Architecture
 
-> **Migration status：`REVIEW_NEEDED`。** 本文从
-> `d6553a96...` 证据分支迁入 `codex/upstream-langfuse-sync`。下述 `LANDED`、测试结果和 Gate
-> 描述目前只对原记录 revision 有效；在 MIG-2/MIG-3 迁移相应代码和测试、MIG-4 实际执行前，
-> 不得解释为 `upstream/main@c2caa907...` 已具备相同覆盖。详见
-> [`../MIGRATION_STATUS.md`](../MIGRATION_STATUS.md)。
+> **Migration status（2026-09-07）：当前测试基线已复验，历史细节仍 `PARTIAL`。**
+> `981821be` 完成 MIG-3/MIG-4：179 passed、1 skipped、2 xfailed，另有 12 subtests passed；
+> Smoke / Stream 本地各通过三次。当前模块映射、配置隔离、报告和 CD 边界见
+> [新测试基线](upstream-testing-baseline.md)，当前 CI 事实见 [CI 第 0 节](ci-pr-gate.md#0-当前-upstream-分支结论)。
+> 下方原模块说明保留供查阅；旧运行时长、PR Required、C0 结果及实施优先级仍属于原 revision，
+> 未宣布全部历史架构逐行核验完成。Langfuse runtime 未接回，远端新 CI 未验证。
 
 ## 0. 阅读说明
 
@@ -19,7 +20,7 @@
 4. 如果要继续补 loop 工作流门禁，再读 [`part-04-agentic-tool-loop.md`](part-04-agentic-tool-loop.md)。
 5. 如果要看 Langfuse / observability 的当前接入和测试边界，再读 [`langfuse-observability.md`](langfuse-observability.md)。
 6. 如果要看 `Quality Gate Summary` 的正式模块说明，再读 [`part-08-quality-gate-summary.md`](part-08-quality-gate-summary.md)。
-7. 如果要看 Agent Workflow Golden Cases 的任务契约和业务 mapping，再读 [`part-11-golden-cases.md`](part-11-golden-cases.md)；当前实施优先级见 [`../plans/sop-compiler-runtime-practical-roadmap.md`](../plans/sop-compiler-runtime-practical-roadmap.md)，历史 Golden 计划保存在 [`../plans/suspend/golden-cases-implementation.md`](../plans/suspend/golden-cases-implementation.md)。
+7. 如果要看 Agent Workflow Golden Cases 的任务契约和业务 mapping，再读 [`part-11-golden-cases.md`](part-11-golden-cases.md)；后续计划见 [`../plans/nagaagent-final-testing-plan.md`](../plans/nagaagent-final-testing-plan.md)，历史 Golden 计划保存在 [`../plans/suspend/golden-cases-implementation.md`](../plans/suspend/golden-cases-implementation.md)。
 8. 如果只想快速知道 Closed Loop V1 现在做到哪里，再读 [`../CURRENT_PROGRESS.md`](../CURRENT_PROGRESS.md)。
 9. 如果要看当前 GitHub Actions 和 PR required check，再读 [`ci-pr-gate.md`](ci-pr-gate.md)。
 10. 如果要从 SSE 风险追踪到 nodeid、run、Artifact、failure classification 和当前决定，再读 [`../reports/closed-loop-v1-c0-5-2026-09-01.md`](../reports/closed-loop-v1-c0-5-2026-09-01.md)。

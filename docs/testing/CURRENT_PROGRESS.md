@@ -3,7 +3,7 @@
 > 最后更新：`2026-09-07`\
 > 当前计划：[`NagaAgent Upstream Migration Plan`](plans/upstream-migration-plan.md)  
 > 迁移状态真相源：[`MIGRATION_STATUS.md`](MIGRATION_STATUS.md)  
-> 暂停的后续测试计划：[`NagaAgent Final Testing Plan`](plans/nagaagent-final-testing-plan.md)  
+> 后续测试计划（P3-0 未启动）：[`NagaAgent Final Testing Plan`](plans/nagaagent-final-testing-plan.md)\
 > 已完成前置计划：[`Closed Loop V1 Implementation Plan`](plans/closed-loop-v1-implementation-plan.md)  
 > 本页职责：只回答“现在做到哪里、为什么还没完成、下一步是什么”。详细调查和逐次运行记录保留在 `reports/`，不在这里重复。
 
@@ -11,23 +11,22 @@
 
 | 项目 | 当前状态 |
 |---|---|
-| 总体阶段 | Upstream Migration：`IN_PROGRESS`；Closed Loop V1 只在 source revision 上保持历史 `VERIFIED` |
-| 当前工作单元 | `MIG-2 — 迁移 Langfuse adapter 与确定性测试` |
-| 当前状态 | `DONE`；下一工作单元为 MIG-3，尚未启动 |
-| 完成分布 | MIG-0～MIG-2 `DONE`；MIG-3～MIG-4 `TODO`；P3-0 暂停 |
-| 已完成执行链 | 历史 C0：`3x green -> intentional red -> failure Artifact -> restored green`；本次仅验证 Langfuse adapter 本地测试 |
-| 当前证据 revision | MIG-2 代码/测试 `c7122124`（upstream base `c2caa907...`）；历史证据分支仍为 `d6553a96...` |
-| Langfuse | Adapter 与测试已迁入；58 cases 在本地和 pytest-only 隔离环境通过；运行时调用与 SDK 依赖仍未接回，不会自动产生 trace |
-| Gate 状态 | 目标分支：旧 Smoke/Stream workflows 尚未迁移，按 `NOT_WIRED` 处理；历史状态不自动继承 |
-| 文档发布状态 | MIG-1 文档已保存；MIG-2 进度、Langfuse 架构与执行记录已同步；尚未 push/PR |
-| Remote memory | 产品能力保留；旧证据分支两条 SSE 契约内 `ISOLATED`，目标分支这些测试待 MIG-3 迁入；真实集成覆盖 `DELAYED` |
-| 最小 Closed Loop 能力 | 旧 revision 上 `VERIFIED`；目标分支尚未重新跑通这条 SSE/CI 闭环 |
-| CD 定位 | 仓库已有跨平台 Build & GitHub Release；Personal Web 有用户提供的 CD 实践，但具体 staging/production 平台部署细节尚未在本项目验证，当前为次重点 |
-| Architecture 同步 | Langfuse 页已按 MIG-2 同步；其他旧架构文档仍为 `REVIEW_NEEDED`，待 MIG-3/MIG-4 核对 |
+| 总体阶段 | Upstream Migration 本地范围 `DONE`；MIG-0～MIG-4 完成 |
+| 最近完成 | MIG-3 测试/CI 资产迁移；MIG-4 独立环境回归与新基线 |
+| 当前代码基线 | `981821be`，基于 upstream `c2caa907...`；原证据分支 `d6553a96...` 保留不动 |
+| 本地测试 | **179 passed、1 skipped、2 xfailed**；另有 12 subtests passed；Smoke 3 条、Stream 2 条分别连续 3 次通过 |
+| 报告产物 | JUnit、Allure 原始结果、Quality 摘要可生成；Quality 仅汇总 32 条子集，本次没有性能基线比较 |
+| Langfuse | 58 个 adapter cases 随完整回归通过；**SDK 依赖与运行时调用仍未接回，不会自动产生 trace** |
+| GitHub / Gate | 两个 workflow 已迁入；新 revision 远端运行及 Required 状态未验证；未 push、PR 或改规则 |
+| Remote memory | 产品能力保留；SSE 测试中隔离，真实集成 `DELAYED` |
+| 下一步 | 可回到 P3-0 整理基础 Agent workflow 与测试范围；迁移前置条件已满足，**本次未启动 P3-0**。Langfuse runtime 恢复仍需单独实施 |
+| 文档 / Architecture | 当前进度、迁移记录、新测试基线、CI 与 Langfuse 边界已同步；各 Part 历史细节未全部逐行复核，整体 `PARTIAL` |
 
-一句话判断：**Langfuse 的适配层已迁移并通过 58 个本地用例，但聊天链路尚未接入它。下一步 MIG-3 迁移其余测试/CI，MIG-4 再确认新 baseline。**
+一句话判断：**新上游版本已有可继续开发的本地测试基线；剩下的不是迁移测试文件，而是后续业务测试、Langfuse 运行时接线及远端 CI 验收。**
 
-本轮具体改了什么、为什么及证明边界，见 [MIG-2 执行记录](reports/upstream-migration-mig-2-execution-journal.md)。
+为什么这样迁移见 [MIG-3 记录](reports/upstream-migration-mig-3-execution-journal.md)；本轮结果与缺口见
+[MIG-4 报告](reports/upstream-migration-mig-4-execution-journal.md)；按模块理解现有测试见
+[新测试基线](architecture/upstream-testing-baseline.md)。
 
 > 以下 C0 材料是 pre-migration history，证据含义仅绑定其记录的 source revision。
 
@@ -109,7 +108,7 @@ CI/CD 的环境、执行策略和 Gate 等级。不能把所有复杂度都归�
 - 后续如选择部署平台，最小可信 CD 边界应至少包含：可复现构建、环境配置/secret、部署、health 或
   post-deploy smoke、失败回滚和部署证据。
 
-### 5.3 Architecture 尚未同步的内容
+### 5.3 Architecture 同步状态（历史待办的当前处理）
 
 截至 2026-09-02，C0-6 的执行事实已经同步到 `overview.md`、`part-02-api-stream.md` 和
 `ci-pr-gate.md`；但本节新增的以下跨层结论仍只存在于 Current Progress：
@@ -119,11 +118,11 @@ CI/CD 的环境、执行策略和 Gate 等级。不能把所有复杂度都归�
 3. 复杂业务主要增加测试设计与依赖控制，也可能扩散到 CI/CD 环境与 Gate 策略。
 4. 当前仓库的 Build & Release、Personal Web CD 经验和未来平台部署验证属于三个不同证据层级。
 
-预计事实所有者为 `architecture/overview.md`（全局 Closed Loop 模型）和
-`architecture/ci-pr-gate.md`（CI、Release 与未来 platform CD 边界）。在完成该同步前，Architecture
-状态保持 `PARTIAL`，不得写成上述新结论已经被完整架构化。
+2026-09-07：上述跨层结论已归入 [`architecture/upstream-testing-baseline.md`](architecture/upstream-testing-baseline.md)
+第 5 节，并由 overview / CI 入口链接。新分支的当前测试与 CI 边界已更新；
+其他旧模块页和整体产品架构尚未逐行核验，Architecture 整体仍为 `PARTIAL`。
 
-## 6. 当前证明边界
+## 6. 历史 C0 证明边界（非当前 upstream Gate 状态）
 
 - `Smoke Blocking Gate` 当前有 Required 运行时证据；`Stream Contract Gate` 没有 Required 证据，继续分类为 `NON_BLOCKING`。
 - Stream Contract 使用真实 `/chat/stream` route、可控 fake loop 和 persistence spy；它不证明真实 LLM、真实持久化回读或完整 Agent Workflow。

@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-07",
+  "status": "LOCAL_TESTING_BASELINE_VERIFIED",
+  "source_revision": "d6553a96f6987c5f58fdafddb99fc28e19c72eb0",
+  "upstream_base": "c2caa9079b9eb48129f550c43a5485231d404d3b",
+  "branch": "codex/upstream-langfuse-sync",
+  "artifact_root": "tests/artifacts/upstream_migration/mig-4",
+  "environment": {
+    "UV_PROJECT_ENVIRONMENT": ".pytest_cache/mig4-venv",
+    "NAGA_ENABLE_REAL_LLM_TESTS": "0",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+  },
+  "pytest_summary": {
+    "passed": 179,
+    "skipped": 1,
+    "xfailed": 2,
+    "failed": 0,
+    "errors": 0,
+    "passed_subtests": 12,
+    "warnings": 4
+  },
+  "identity_checks": {
+    "full_vs_quality_equal": true,
+    "smoke_three_runs_equal": true,
+    "stream_three_runs_equal": true
+  },
+  "bounds": {
+    "github_execution": "UNVERIFIED_ON_TARGET",
+    "required_checks": "UNKNOWN_ON_TARGET_NOT_CHANGED",
+    "langfuse_runtime": "NOT_WIRED",
+    "real_remote_memory": "DELAYED",
+    "performance_baseline": "NOT_PROMOTED",
+    "allure_html": "NOT_GENERATED",
+    "release_and_deploy": "NOT_RUN"
+  },
+  "revision": "981821be7b971c4123c8f41d7a77f176970cd872",
+  "python": "3.11.7",
+  "platform": "Windows-10-10.0.22000-SP0",
+  "packages": {
+    "pytest": "9.1.1",
+    "pytest-asyncio": "1.4.0",
+    "allure-pytest": "2.16.0"
+  },
+  "junit": {
+    "full.xml": {
+      "counts": {
+        "passed": 179,
+        "skipped": 3
+      },
+      "testcases": 182,
+      "sha256": "8f150c6b877341bb8dc6c73cf828eca4c0874a41b04cdb67bca526e0fb1c56c4"
+    },
+    "probe-assertion.xml": {
+      "counts": {
+        "failed": 1
+      },
+      "testcases": 1,
+      "sha256": "c8f4f67ea195121b89fe08da35e5848b09367cf5a5c335d76335ba40aa82d5b6"
+    },
+    "probe-offline_guard.xml": {
+      "counts": {
+        "error": 1
+      },
+      "testcases": 1,
+      "sha256": "bfcc8fe194d18892e513c155d2e86071760da2a10cd798c95f2e818761a745e4"
+    },
+    "quality.xml": {
+      "counts": {
+        "passed": 179,
+        "skipped": 3
+      },
+      "testcases": 182,
+      "sha256": "fb9a726b3878040894d7205df593d511c6d50b979a9736882bf34eb169fa1cdd"
+    },
+    "smoke-1.xml": {
+      "counts": {
+        "passed": 3
+      },
+      "testcases": 3,
+      "sha256": "b73ea59399918d248f24341f98ddb22c8a04dc7bb5afd429a6d54561df2ecfe1"
+    },
+    "smoke-2.xml": {
+      "counts": {
+        "passed": 3
+      },
+      "testcases": 3,
+      "sha256": "3632988fb040217cff480f9d7e40fc5343ece38d0cce2fed6225f3ce597aaf82"
+    },
+    "smoke-3.xml": {
+      "counts": {
+        "passed": 3
+      },
+      "testcases": 3,
+      "sha256": "82bfefae62ff3270ee193f6954a4a96e04620e6ef4fb6b17b552b3b9d44479fe"
+    },
+    "stream-1.xml": {
+      "counts": {
+        "passed": 2
+      },
+      "testcases": 2,
+      "sha256": "917c4d55e4ec26cb4eafdc602ccfd91769f341dc95134db9f45324fe39e77c98"
+    },
+    "stream-2.xml": {
+      "counts": {
+        "passed": 2
+      },
+      "testcases": 2,
+      "sha256": "56a76c5c82ee5a5eadbf3b9c42b86d7e26d374246c5a3a6de11006cfdbda6ee9"
+    },
+    "stream-3.xml": {
+      "counts": {
+        "passed": 2
+      },
+      "testcases": 2,
+      "sha256": "e6bbb5dcf364f6aebc7d9986e39e1d4a655218be3481b4c298650e00068ff276"
+    }
+  },
+  "groups": {
+    "tests.golden_cases.test_agent_workflow_golden_cases": 5,
+    "tests.integration.chat_stream.test_real_llm_smoke": 1,
+    "tests.integration.chat_stream.test_resilience": 8,
+    "tests.smoke.test_api_smoke": 3,
+    "tests.test_config_and_tools.ConfigAndToolTests": 31,
+    "tests.test_config_and_tools.McpFuncNameSanitizeTests": 11,
+    "tests.test_live2d_assets.Live2DAssetsTest": 3,
+    "tests.test_updates_and_tts.UpdateRouteTests": 5,
+    "tests.test_updates_and_tts.TtsAudioFormatTests": 6,
+    "tests.unit.agentic_tool_loop.test_loop_context_compression": 2,
+    "tests.unit.agentic_tool_loop.test_loop_convergence": 4,
+    "tests.unit.agentic_tool_loop.test_loop_failure_attribution": 5,
+    "tests.unit.agentic_tool_loop.test_loop_message_injection": 4,
+    "tests.unit.agentic_tool_loop.test_loop_tool_dispatch": 5,
+    "tests.unit.p2_api.test_failure_attribution": 7,
+    "tests.unit.test_golden_case_runner": 5,
+    "tests.unit.test_golden_case_schema": 9,
+    "tests.unit.test_langfuse_integration": 58,
+    "tests.unit.test_offline_bootstrap": 5,
+    "tests.unit.test_quality_gate_summary": 5
+  },
+  "gaps": [
+    {
+      "class": "tests.integration.chat_stream.test_real_llm_smoke",
+      "name": "test_chat_stream_real_llm_normal_smoke",
+      "reason": "requires opt-in and working real LLM credentials/config",
+      "type": "pytest.skip"
+    },
+    {
+      "class": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+      "name": "test_chat_stream_user_stop_contract_gap",
+      "reason": "runtime has no explicit user-stop contract yet; keep this as an executable gap",
+      "type": "pytest.xfail"
+    },
+    {
+      "class": "tests.unit.agentic_tool_loop.test_loop_message_injection",
+      "name": "test_duplicate_tool_call_id_is_deduplicated_across_rounds",
+      "reason": "runtime does not deduplicate duplicate tool_call_id injections across rounds yet",
+      "type": "pytest.xfail"
+    }
+  ],
+  "selected_ids": {
+    "smoke": [
+      [
+        "tests.smoke.test_api_smoke",
+        "test_chat_non_stream_smoke"
+      ],
+      [
+        "tests.smoke.test_api_smoke",
+        "test_chat_stream_smoke_has_terminal_event"
+      ],
+      [
+        "tests.smoke.test_api_smoke",
+        "test_health_smoke"
+      ]
+    ],
+    "stream": [
+      [
+        "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+        "test_chat_stream_resilience_baseline_finishes_and_cleans_state"
+      ],
+      [
+        "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+        "test_chat_stream_resilience_midstream_exception_returns_error_and_cleans_state"
+      ]
+    ]
+  },
+  "allure": {
+    "results": 182,
+    "statuses": {
+      "passed": 179,
+      "skipped": 3
+    },
+    "attachments": 104,
+    "missing_attachments": []
+  },
+  "quality": {
+    "run_id": "2026-09-07T03:34:25+00:00",
+    "profile": "stub",
+    "suite": "agent_workflow_regression",
+    "summary": {
+      "total": 32,
+      "passed": 29,
+      "failed": 0,
+      "warned": 0,
+      "gate_result": "pass"
+    },
+    "metrics": {
+      "ttfb_p95_ms": 15,
+      "total_latency_p95_ms": 15,
+      "avg_tool_rounds": 1.083,
+      "max_tool_rounds": 3,
+      "avg_tool_count": 0.25,
+      "retry_count": 0,
+      "workflow_timeout_count": 0
+    },
+    "regression": {
+      "baseline": "F:\\Programme\\Agent\\NagaAgent-main\\tests\\artifacts\\upstream_migration\\mig-4\\advisory-baseline\\stub_main.json",
+      "pass_rate_delta": null,
+      "latency_delta": null,
+      "rounds_delta": null,
+      "baseline_bootstrap": true
+    },
+    "failures": []
+  },
+  "hashes": {
+    "uv.lock": "a297a27967f21f0df8804e2b80fd16befd96a989672b3742690dd36635628ed3",
+    "pyproject.toml": "6cebb0a302765eec1a55c888e39d42b30c4ea5a86f1919522d2339a6e3ba2bb7",
+    ".github/workflows/pr-smoke-gate.yml": "50c9eadd25c2641afc06bbb58f4e640c4ac6a4a6eb1591d7397703373341131e",
+    ".github/workflows/pr-stream-contract-gate.yml": "25d94078abd6b50c5aec3e4d25ac5da96d828bec370c73ece23ebc94bbb0d4d3"
+  }
+}

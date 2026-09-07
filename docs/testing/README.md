@@ -1,9 +1,9 @@
 # NagaAgent Testing Documentation
 
-> **Upstream migration notice（2026-09-04）**：本目录已迁入
-> `codex/upstream-langfuse-sync`，但旧测试、Langfuse 和 CI 资产尚未全部迁移或在新代码上复验。
-> 先阅读 [`MIGRATION_STATUS.md`](MIGRATION_STATUS.md)；旧报告只证明其记录的 source revision，
-> 不能直接当作当前 upstream 分支的通过证据。
+> **Upstream migration notice（2026-09-07）**：MIG-0～MIG-4 已完成本地迁移验收，
+> 测试基线为 `981821be`。先读 [`CURRENT_PROGRESS.md`](CURRENT_PROGRESS.md) 和
+> [新测试基线](architecture/upstream-testing-baseline.md)。Langfuse runtime 尚未接回，
+> 新 revision 的远端 CI 未验证；旧 C0 报告仍只证明其 source revision。
 
 本目录按“文档职责”组织，避免把稳定架构说明、阶段进度、执行结果和历史任务混在同一层。
 
@@ -56,6 +56,7 @@ docs/testing/
 
 ### Architecture
 
+- [当前 upstream 测试基线与边界](architecture/upstream-testing-baseline.md)
 - [Overview](architecture/overview.md)
 - [Part 02 API / SSE](architecture/part-02-api-stream.md)
 - [Part 04 Agentic Tool Loop](architecture/part-04-agentic-tool-loop.md)
@@ -66,7 +67,8 @@ docs/testing/
 
 ### Plans and progress
 
-- [SOP Compiler / Runtime Practical Roadmap](plans/sop-compiler-runtime-practical-roadmap.md)
+- [NagaAgent Final Testing Plan（P3-0 未启动）](plans/nagaagent-final-testing-plan.md)
+- [Upstream Migration Plan（本地范围完成）](plans/upstream-migration-plan.md)
 - [Closed Loop V1 Implementation Plan](plans/closed-loop-v1-implementation-plan.md)
 - [Suspended Plans Index](plans/suspend/README.md)
 
@@ -80,7 +82,7 @@ docs/testing/
 ## 维护约定
 
 - `CURRENT_PROGRESS.md` 是快速了解当前阶段、工作单元、缺口和下一步的唯一单页入口；它只做摘要，不复制执行日志。
-- 当前优先级和架构方向的唯一计划入口是 `plans/sop-compiler-runtime-practical-roadmap.md`；Closed Loop V1 的执行细则由 `plans/closed-loop-v1-implementation-plan.md` 维护。
+- 当前后续路线图是 `plans/nagaagent-final-testing-plan.md`；迁移执行事实见 `plans/upstream-migration-plan.md`，Closed Loop V1 作为历史前置计划保留。
 - `plans/suspend/` 中的文件只保留历史、详细设计和后置方案，不作为当前实施或 Gate 状态真相源。
 - 各 Part 只记录已核对的实现、测试层、真实性边界和扩展方向。
 - 运行结果由 pytest、Quality Gate 和 Allure 生成；手写文档只能解释结果，不能替代执行证据。

@@ -1,8 +1,26 @@
 # CI / PR Gate
 
-> **Migration status：`NOT_WIRED` on target branch。** 下述 workflow/run/Gate 事实属于旧
-> source revision；MIG-3 尚未把对应 GitHub Actions 迁入当前 upstream-based branch。
-> 详见 [`../MIGRATION_STATUS.md`](../MIGRATION_STATUS.md)。
+> **当前迁移状态（2026-09-07）**：两个 workflow 已迁入 `981821be`，本地等价 selection
+> 各通过三次；新 revision 尚未在 GitHub 运行，Required 状态未确认或修改。
+> 下文带 C0 / 旧 run 的证据仍属于 source revision。当前以第 0 节和第 5 节为准；
+> 详见 [MIG-4 报告](../reports/upstream-migration-mig-4-execution-journal.md)。
+
+## 0. 当前 upstream 分支结论
+
+| 对象 | 已核对事实 | 尚未证明 |
+|---|---|---|
+| `PR Smoke Gate / Smoke Blocking Gate` | workflow 存在；精确 3 条，本地连续三次通过 | 新 GitHub run / Artifact / Required |
+| `PR Stream Contract Gate / Stream Contract Gate` | workflow 存在；精确 2/8 条，本地连续三次通过 | 新 GitHub run / Artifact / Required |
+| JUnit 失败路径 | 本地合成 assertion failure 和连接隔离 error 均 exit 1，并生成可解析 JUnit | 本轮没有执行远端红灯或 always-upload |
+| Quality / Allure | 本地输出已验证；未接入这两个 PR job | 不作为合并或发布授权 |
+
+两份 job 现在显式设置 `NAGA_ENABLE_REAL_LLM_TESTS=0`、`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`，
+使用 `uv run --frozen`，只显式加载 `pytest_asyncio.plugin`。测试代码负责 collection-time 配置与连接隔离。
+Check 名称、触发条件、marker selection、JUnit 路径、`if: always()` 和 14 天保留期保持原契约。
+workflow `LANDED` 不等于远端 `VERIFIED`；旧 Smoke Required 证据不能搬到新 revision。
+
+本次未 push、PR、merge 或修改平台规则。Build & Release 保持上游原样且未执行；它与真实平台部署、
+health、migration、rollback 是不同验收范围。全局边界见 [新测试基线](upstream-testing-baseline.md)。
 
 ## 1. 文档定位
 
@@ -16,7 +34,7 @@
 模块测试文档，例如 [`part-02-api-stream.md`](part-02-api-stream.md)，负责说明测试行为和断言；本文件只记录当前
 已经落地的 GitHub Actions 配置，不承载尚未确定的后续 Gate 规划。
 
-## 2. 当前 Workflows
+## 2. Workflow 契约与历史 C0 证据
 
 - 文件：`.github/workflows/pr-smoke-gate.yml`
 - workflow 名称：`PR Smoke Gate`
@@ -46,7 +64,7 @@ checkout repository
   -> setup Python 3.11
   -> setup uv
   -> uv sync --frozen --group test
-  -> uv run python -m pytest tests/smoke -m "smoke and blocking" -q
+  -> uv run --frozen python -m pytest -p pytest_asyncio.plugin tests/smoke -m "smoke and blocking" -q
        --junitxml=tests/artifacts/closed_loop_v1/junit-smoke.xml
   -> 无论 pytest 成功或失败都上传 suite/run/attempt 唯一的 JUnit Artifact
   -> pytest 非零退出码仍决定 job failure
@@ -73,7 +91,7 @@ checkout repository
    - `if-no-files-found: error` 把“承诺生成报告但文件缺失”识别为 CI 基础设施错误。
    - 上传成功不会覆盖 pytest 的失败结果；pytest assertion 和退出码仍是 blocking truth。
 
-### 2.3 Stream Contract Gate（远端 PR 运行已验证）
+### 2.3 Stream Contract Gate（远端 PR 证据属于旧 revision）
 
 - 文件：`.github/workflows/pr-stream-contract-gate.yml`
 - workflow 名称：`PR Stream Contract Gate`
@@ -94,7 +112,7 @@ checkout repository
   -> setup Python 3.11
   -> setup uv
   -> uv sync --frozen --group test
-  -> uv run python -m pytest tests/integration/chat_stream/test_resilience.py
+  -> uv run --frozen python -m pytest -p pytest_asyncio.plugin tests/integration/chat_stream/test_resilience.py
        -m "integration and blocking and not real_llm" -q
        --junitxml=tests/artifacts/closed_loop_v1/junit-stream-contract.xml
   -> 无论 pytest 成功或失败都上传 suite/run/attempt 唯一的 JUnit Artifact
@@ -208,9 +226,9 @@ Repository Owner 于 2026-09-01 选择 `A — DEFER_REQUIRED_PROMOTION`：
 文件为 `7 passed, 1 xfailed, 3 warnings in 13.54s`。完整决定见
 [`C0-6 Owner Decision Record`](../reports/closed-loop-v1-c0-6-2026-09-01.md)。
 
-## 3. 当前实际门禁范围
+## 3. 历史 source revision 的实际门禁范围
 
-当前 PR 配置并验证了两个分离的确定性检查：
+以下是旧 C0 PR 已验证的两个检查，不是 MIG-4 新 revision 的远端状态：
 
 | 测试集合 | 当前 CI 是否执行 | Gate 状态 | 当前定位 |
 |---|---|---|---|
@@ -249,18 +267,23 @@ workflow YAML 负责“产生 check”，Branch Protection 或 Repository Rulese
 
 ## 5. 本地复现
 
-当前 GitHub Actions 的等价测试命令：
+当前 workflow 的等价测试命令（Bash）：
 
 ```bash
+export NAGA_ENABLE_REAL_LLM_TESTS=0
+export PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
 uv sync --frozen --group test
-uv run python -m pytest tests/smoke -m "smoke and blocking" -q \
+uv run --frozen python -m pytest -p pytest_asyncio.plugin tests/smoke -m "smoke and blocking" -q \
   --junitxml=tests/artifacts/closed_loop_v1/junit-smoke.xml
-uv run python -m pytest tests/integration/chat_stream/test_resilience.py \
+uv run --frozen python -m pytest -p pytest_asyncio.plugin tests/integration/chat_stream/test_resilience.py \
   -m "integration and blocking and not real_llm" -q \
   --junitxml=tests/artifacts/closed_loop_v1/junit-stream-contract.xml
 ```
 
-## 6. 当前结论
+Windows PowerShell 的独立环境复现与报告命令见 [MIG-4 第 9 节](../reports/upstream-migration-mig-4-execution-journal.md#9-复现与证据索引)。
+本地执行不等于 GitHub runner、Artifact 发布和 Required 生效；这些需要新 revision 的独立证据。
+
+## 6. 历史 C0 结论（不继承为 MIG-4 远端结果）
 
 - PR Smoke workflow 已在 GitHub Actions 运行成功。
 - Stream Contract workflow 已在真实 `pull_request` 事件中运行成功，commit 为

@@ -1,7 +1,11 @@
 # P2 API Testing
 
-> **Migration status：`REVIEW_NEEDED`。** 对应测试尚未在 target branch 迁移/执行；旧断言与结果
-> 仅绑定 source revision。详见 [`../MIGRATION_STATUS.md`](../MIGRATION_STATUS.md)。
+> **当前迁移状态（2026-09-07）**：Smoke / SSE 资产已迁入 `981821be` 并在独立环境复验。
+> Smoke 3 passed；resilience 7 passed + user-stop 1 xfailed；两个 workflow 的精确选测各通过三次。
+> 真实 route、受控 Loop/LLM、保存 spy 与 Remote Memory 隔离的边界仍成立。
+> 新 revision 的远端 CI/Required 未验证；下文旧 PR 和运行记录只属于 source revision。
+> 当前证据见 [MIG-4 报告](../reports/upstream-migration-mig-4-execution-journal.md)，
+> 全局基座适配见 [新测试基线](upstream-testing-baseline.md)。未逐行重新认证本文所有历史设计细节。
 >
 > 对应 [`overview.md`](overview.md) 第 2 章。
 
