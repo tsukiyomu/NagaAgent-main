@@ -5,7 +5,9 @@
 > Smoke / Stream 本地各通过三次。当前模块映射、配置隔离、报告和 CD 边界见
 > [新测试基线](upstream-testing-baseline.md)，当前 CI 事实见 [CI 第 0 节](ci-pr-gate.md#0-当前-upstream-分支结论)。
 > 下方原模块说明保留供查阅；旧运行时长、PR Required、C0 结果及实施优先级仍属于原 revision，
-> 未宣布全部历史架构逐行核验完成。Langfuse runtime 未接回，远端新 CI 未验证。
+> 未宣布全部历史架构逐行核验完成。2026-09-08 MIG-5 已在 `7c88065c` 恢复 Langfuse runtime：
+> 全套 189 passed / 2 skipped / 2 xfailed + 12 subtests，另完成合成 LAN trace 读回。
+> 详见 [当前 Langfuse 用法](langfuse-observability.md)；远端新 CI 仍未验证。
 
 ## 0. 阅读说明
 
@@ -138,7 +140,7 @@
 2. `final_status=cancelled`、finalize/cleanup 幂等和部分响应保存规则。
 3. timeout、重复 finalize、客户端断开等生命周期矩阵。
 4. 进程内 `first_chunk_ms` 与真实网络 `ttfb_ms` 的指标口径分离。
-- 当前优先级和后续状态以 [`../plans/sop-compiler-runtime-practical-roadmap.md`](../plans/sop-compiler-runtime-practical-roadmap.md) 为准；历史进度表保存在 [`../plans/suspend/`](../plans/suspend/README.md)。
+- 本节历史路线图见 [SOP Compiler Runtime（暂缓）](../plans/sop-compiler-runtime-practical-roadmap%28temp%20suspend%29.md)；历史进度表保存在 [`../plans/suspend/`](../plans/suspend/README.md)。当前计划以 [Current Progress](../CURRENT_PROGRESS.md) 为入口。
 
 ### 2.9 业务映射说明
 - Side-channel 指：通知、遥测、持久化、压缩等旁路能力。

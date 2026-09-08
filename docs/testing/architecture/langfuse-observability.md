@@ -1,12 +1,93 @@
 ﻿# Langfuse 接入说明
 
-> **当前迁移状态（2026-09-07）**：MIG-2 已将 adapter/tests 从 `d6553a96...` 迁入
-> upstream-based 分支，代码/测试 commit 为 `c7122124`，58 个 unit cases 已通过。
-> **运行时仍未接线**：`LLMService`、tool dispatcher、chat route 和 API lifecycle 没有调用
-> adapter，依赖清单也没有 Langfuse。因此，仅配置环境变量不会自动产生 trace。
-> 详见 [迁移状态](../MIGRATION_STATUS.md) 与 [MIG-2 执行记录](../reports/upstream-migration-mig-2-execution-journal.md)。
-> MIG-3 / MIG-4 补充：这 58 个 cases 已在 `981821be` 的完整 frozen 回归中再次通过；
-> 全局 pytest 基座已迁入，但两个 PR workflow 不选择 Langfuse 单测，runtime 状态不变。
+> **当前状态（2026-09-08，MIG-5）**：chat / LLM / tool / lifecycle 已接线，
+> `langfuse==4.15.1` 已锁定并安装。使用原有 `.env`，已向局域网实例上传并读回
+> 2 条合成 trace、7 个 observations。这里的“可用”是运行时观测链路可用，不是模型质量或完整产品 E2E 验收。
+> 当前用法与边界先读下节；MIG-2 和历史章节保留其原时间范围。
+> 验收入口：[MIG-5 journal](../reports/upstream-migration-mig-5-execution-journal.md)。
+
+## MIG-5 当前用法与证明范围
+
+### 现在可以看到什么
+
+Langfuse 负责解释“这次请求调用了几次模型、哪个工具执行失败”，不负责生成答案或判定 CI。
+当前接入遵循仓库已有边界：路由管理一次请求，LLMService 管理真实调用及重试，dispatcher 管理单次工具执行。
+
+```text
+一个 session（产品已有的会话 ID）
+├── chat.request：本次非流式请求的一条独立 trace
+│   └── llm.generation
+└── chat.stream：下一次流式请求的另一条独立 trace
+    ├── llm.generation  attempt=1（例如空响应）
+    ├── llm.generation  attempt=2（原重试策略）
+    ├── tool.<service>.<tool_name>
+    └── llm.generation  attempt=1（下一轮调用）
+```
+
+这里的 `attempt` 在每次 LLMService 调用内从 1 开始，不是整个会话的轮数。
+generation 与工具是 chat root 的子项；通过时间顺序读轮次，没有另建 round span。
+并发工具各自有 span，仍保留原 `gather(return_exceptions=True)` 的顺序和错误归一化。
+
+**工程选择的依据**：SSE 路由返回 `StreamingResponse` 时，模型尚未完成。因此
+[`langfuse_runtime.py`](../../../apiserver/langfuse_runtime.py) 用手动 observation 生命周期覆盖实际迭代；
+仅在 `anext` 执行和清理期间激活上下文，`yield` 返回给调用方前恢复上下文。
+这把“span 仍存在”和“span 是当前上下文”分开，避免交错流串 trace。
+SDK `_otel_span` 的访问集中在一个桥接位置；真实 SDK 契约测试约束它，升级 SDK 时必须重跑。
+
+### 配置与复现
+
+根目录 `.env` 的现有三项继续使用，**不需要重新提供 key，也未修改原 key**：
+
+```dotenv
+LANGFUSE_BASE_URL=http://<你的局域网主机>:3000
+LANGFUSE_PUBLIC_KEY=<项目 public key>
+LANGFUSE_SECRET_KEY=<项目 secret key>
+LANGFUSE_TRACING_ENABLED=true
+LANGFUSE_CAPTURE_CONTENT=false
+```
+
+- 安装锁定依赖：`uv sync --frozen --group test`。然后按原项目启动方式重启 NagaAgent API；已运行进程不会自动加载新代码。
+- 使用保存的 `LANGFUSE_BASE_URL` 打开服务，进入原项目的 Traces。MIG-5 合成 trace ID 见 journal / readback 清单。
+- 启动显示 client initialized 只说明 SDK 创建成功，不能代替服务端读回验收。
+- 缺任一配置、显式 `LANGFUSE_TRACING_ENABLED=false` 或 SDK 初始化失败时降级；状态在进程内缓存，改配置后重启。
+- 默认不上传 input/output/推理正文；保留名称、模型、attempt、usage（供应商提供时）、状态、耗时及 session/trace 标识。
+- 确需调试正文时，显式设置 `LANGFUSE_CAPTURE_CONTENT=true` 并重启。它可能包含历史 messages；脱敏是尽力策略，**不是任意 PII 清除保证**。
+- 输入、输出、metadata 分别有深度/集合/字符串边界和 16,000 字节上限；密钥字段、已知环境 secret、Bearer、常见 key/email 被替换。超长流字段丢弃内容而非保留密钥前缀；不记录原始 token-refresh SSE。
+- 不在请求路径同步 flush；由 SDK 后台批量发送。API 清理在 daemon 线程执行，事件循环最多等待 2 秒。
+  超时意味着 delivery 未确认，不代表强制终止 SDK 或保证进程级退出时限。
+
+仅发送合成数据的可重复验收命令：
+
+```text
+uv run --frozen python scripts/verify_langfuse_lan.py --confirm-synthetic-upload
+```
+
+脚本读取根 `.env`，只放行该私网 IP:port；不启用 real-LLM profile。每次运行写入两条新的合成 trace，
+不删除旧记录。没有确认参数不会执行。产物位于 `tests/artifacts/upstream_migration/mig-5/`，
+`lan-probe.json` 记录退出码及源码 SHA-256，`lan-readback.json` 保存白名单字段；只有本次退出 0 才算验收通过。
+
+SDK 与服务器的选择：原服务 `3.172.1` 和认证均正常，因此保留部署，不升级服务器。
+官方说明 Python SDK v4 可与 self-hosted v3（最低 3.63.0）配合；本次也实际通过 v1 trace API 读回。
+参见 [官方版本兼容说明](https://langfuse.com/self-hosting/upgrade/versioning) 与
+[Python SDK v4 迁移说明](https://langfuse.com/docs/observability/sdk/upgrade-path/python-v3-to-v4)。
+
+### 测试证据如何对应边界
+
+| 验证组 / 所有者 | 真实与受控部件 | 断言、失败含义与限制 | 自动化位置 |
+|---|---|---|---|
+| [原 adapter 58 cases](../../../tests/unit/test_langfuse_integration.py) / 适配层 | 真实 adapter，fake SDK | 字段、no-op、异常保留、cleanup；失败首先定位适配契约，不证明上传 | 本地，CI `NOT_WIRED` |
+| [runtime 契约](../../../tests/unit/test_langfuse_runtime.py) / 观测生命周期 | 真实 SDK + 内存 exporter；受控请求与工具 | 独立 root、session/parent、交错 yield、usage-only chunk、取消/close、并发工具、脱敏、有界等待；失败定位上下文/资源/数据策略 | 本地，CI `NOT_WIRED` |
+| [chat wiring](../../../tests/integration/observability/test_langfuse_chat_wiring.py) / 路由与调用边界 | 真实 route、Loop、LLMService、dispatcher、SDK；scripted provider/fake MCP，保存 spy、memory 禁用 | 非流式 + 流式空响应重试 + 工具后第二轮；7 spans 树。证明调用点贯通，不证明真实模型/工具服务 | 内存版默认离线；LAN 版 `OPT_IN` |
+| 同文件 LAN 读回 / 观测传输 | 上一行真实组件 + 原 LAN server | 服务端 trace/session/parent-child、结束时间、合成输出；失败区分认证/传输/异步入库或数据关联 | 只允许指定 LAN endpoint；未纳入 CI |
+
+**明确限制**：取消/生成器关闭的观测生命周期有契约测试，但不等于浏览器 user-stop 产品语义已补齐，原 xfail 保留。
+新 wiring 用例发现当前真实 LLM 路径以最终 `round_end` + 迭代耗尽结束，没有旧 fake-loop profile 提供的 `[DONE]`。
+本单元没有改 SSE 协议，也没有把假依赖契约当作完整真实路径保证。
+未验收真实付费模型、真实 MCP/Memory、真实持久化回读、UI 播放 acknowledgement、Langfuse UI 浏览器交互、
+score/dataset/prompt management 或 GitHub 新 Check。Remote Memory 保留产品实现，真实集成仍 `DELAYED`。
+
+历史提交 `4e6fd1d` 确实写明移除 Langfuse 接入，同时重构语音加载；它未说明移除 Langfuse 的具体原因。
+不能把历史停用归因于当前 LAN 服务故障。
 
 ## MIG-2 已验证的部分
 
@@ -35,7 +116,7 @@ Remote Memory、真实 Langfuse 均不参与正式隔离测试。由于 `apiserv
 CI 分类为 `NOT_WIRED`：当前两个 PR workflow 没有调用本文件。MIG-3 已迁入全局 marker/fixture
 配置并补回 `unit` marker；MIG-4 完整回归覆盖本文件，但不等于增加了远端 Langfuse Check。
 
-## 当前 upstream 的接线核对（尚未实施）
+## MIG-2 时的接线核对（MIG-5 已实施 chat / LLM / tool / lifecycle）
 
 | 未来调用点 | 已查看的代码事实 | 恢复时要保留的语义 |
 |---|---|---|
@@ -44,11 +125,14 @@ CI 分类为 `NOT_WIRED`：当前两个 PR workflow 没有调用本文件。MIG-
 | Chat | `/chat` 返回非流式响应，`/chat/stream` 返回 `StreamingResponse` | root observation 需要覆盖流的实际消费周期，不只覆盖 response 对象创建 |
 | Lifecycle | `api_server.lifespan` 管理启动和 finally 清理 | flush/shutdown 为同步函数，接线前需设计 off-loop 执行与有界退出 |
 
-仍需解决：SDK 版本与安装方式、真实 SDK 验证、runtime wiring、trace/session 父子关系与数据策略。
-`compact_langfuse_payload` 只截断，不脱敏，也不承诺总字节上限；prompt、工具结果和错误字符串仍可能含敏感信息。
-`shutdown_langfuse` 隔离异常但没有超时保证。上述边界不能因本地 unit 通过就消失。
+MIG-2 当时未解决 SDK、接线、父子关系、隐私与有界清理。MIG-5 的处理及实测以本文开头为准。
+`compact_langfuse_payload` 单独使用仍只做截断；现运行时统一经过 `observation_fields` 和脱敏策略。
+同步 `shutdown_langfuse` 本身仍无 deadline，API 调用的是有界等待的 async 包装。
 
-## 0. 后续恢复方案（未实施）
+## 0. MIG-2 设计参考（部分已由 MIG-5 实施）
+
+以下保留设计取舍，不是当前功能清单。chat / generation / tool / lifecycle 已落地；
+motion request 和 UI acknowledgement 未接线。实际名称、批量发送和隐私默认值以开头的 MIG-5 用法为准。
 
 ### 0.1 是否会让项目代码变复杂
 
@@ -167,7 +251,7 @@ acknowledgement。Langfuse 应继续作为运行时 observability layer，不作
 ## 历史实现参考
 
 以下章节记录 `4e6fd1d` 之前的 generation/tool 接入。章节中的“当前”指历史接入版本，不代表
-`codex/upstream-langfuse-sync` 已启用 Langfuse。第 0 节仍是推荐恢复设计，不是 MIG-2 的已实现范围。
+`codex/upstream-langfuse-sync` 的当前实现。MIG-5 已在该分支恢复接入，但不采用下面历史的 request-end 同步 flush。
 
 ## 1. 功能概述
 

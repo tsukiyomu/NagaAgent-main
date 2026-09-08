@@ -1,6 +1,6 @@
 # Testing Current Progress
 
-> 最后更新：`2026-09-07`\
+> 最后更新：`2026-09-08`\
 > 当前计划：[`NagaAgent Upstream Migration Plan`](plans/upstream-migration-plan.md)  
 > 迁移状态真相源：[`MIGRATION_STATUS.md`](MIGRATION_STATUS.md)  
 > 后续测试计划（P3-0 未启动）：[`NagaAgent Final Testing Plan`](plans/nagaagent-final-testing-plan.md)\
@@ -11,21 +11,22 @@
 
 | 项目 | 当前状态 |
 |---|---|
-| 总体阶段 | Upstream Migration 本地范围 `DONE`；MIG-0～MIG-4 完成 |
-| 最近完成 | MIG-3 测试/CI 资产迁移；MIG-4 独立环境回归与新基线 |
-| 当前代码基线 | `981821be`，基于 upstream `c2caa907...`；原证据分支 `d6553a96...` 保留不动 |
-| 本地测试 | **179 passed、1 skipped、2 xfailed**；另有 12 subtests passed；Smoke 3 条、Stream 2 条分别连续 3 次通过 |
-| 报告产物 | JUnit、Allure 原始结果、Quality 摘要可生成；Quality 仅汇总 32 条子集，本次没有性能基线比较 |
-| Langfuse | 58 个 adapter cases 随完整回归通过；**SDK 依赖与运行时调用仍未接回，不会自动产生 trace** |
+| 总体阶段 | MIG-0～MIG-5 `DONE`：本地迁移完成，Langfuse runtime 已恢复并验收 |
+| 当前工作单元 | 无进行中单元；P3-0 未启动 |
+| 最近完成 | MIG-5：SDK、chat/LLM/tool/lifecycle 接线与 LAN 合成 trace 上传、读回 |
+| 当前代码基线 | `7c88065c`；MIG-4 历史测试基线 `981821be` 保留；原证据分支 `d6553a96...` 不动 |
+| 本地测试 | **189 passed、2 skipped、2 xfailed**；另有 12 subtests passed；JUnit 无 failure/error |
+| 报告产物 | 本轮完整 JUnit、LAN trace/session/parent-child 证据及源码 hash；Allure/Quality 的已验证事实仍绑定 MIG-4 |
+| Langfuse | **真实可用**：原 LAN 服务、原凭据、SDK 4.15.1；提交后验收 2 traces / 7 observations。默认不上传正文；重启现有 API 进程后加载新代码 |
 | GitHub / Gate | 两个 workflow 已迁入；新 revision 远端运行及 Required 状态未验证；未 push、PR 或改规则 |
 | Remote memory | 产品能力保留；SSE 测试中隔离，真实集成 `DELAYED` |
-| 下一步 | 可回到 P3-0 整理基础 Agent workflow 与测试范围；迁移前置条件已满足，**本次未启动 P3-0**。Langfuse runtime 恢复仍需单独实施 |
-| 文档 / Architecture | 当前进度、迁移记录、新测试基线、CI 与 Langfuse 边界已同步；各 Part 历史细节未全部逐行复核，整体 `PARTIAL` |
+| 下一步 | 回到 P3-0 理解基础 Agent workflow 与测试范围；本轮未启动 P3-0，也未扩大真实外部依赖验收 |
+| 文档 / Architecture | 当前进度、迁移记录、测试基线、Langfuse 用法已同步；各 Part 历史细节未全部逐行复核，整体仍 `PARTIAL` |
 
-一句话判断：**新上游版本已有可继续开发的本地测试基线；剩下的不是迁移测试文件，而是后续业务测试、Langfuse 运行时接线及远端 CI 验收。**
+一句话判断：**本地测试基座和 Langfuse 运行时观测链路都已可用；后续重点是业务测试与理解 Agent workflow，远端 CI 仍需单独验收。**
 
 为什么这样迁移见 [MIG-3 记录](reports/upstream-migration-mig-3-execution-journal.md)；本轮结果与缺口见
-[MIG-4 报告](reports/upstream-migration-mig-4-execution-journal.md)；按模块理解现有测试见
+[MIG-5 journal](reports/upstream-migration-mig-5-execution-journal.md)；按模块理解现有测试见
 [新测试基线](architecture/upstream-testing-baseline.md)。
 
 > 以下 C0 材料是 pre-migration history，证据含义仅绑定其记录的 source revision。

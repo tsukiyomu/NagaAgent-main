@@ -20,6 +20,7 @@
 
 ## 执行记录
 
+- [2026-09-08：MIG-5 Langfuse runtime 恢复](upstream-migration-mig-5-execution-journal.md) — `DONE`；原 LAN 服务合成 trace 上传/读回通过，189 passed / 2 skipped / 2 xfailed + 12 subtests；默认不上传正文，真实模型/Memory/MCP 未验收。
 - [2026-09-03：Final Testing Plan 价值与决策分析](final-testing-plan-analyze.md) — `DONE / TEACH_BACK_PENDING`；解释 P3-0～P3-9 的证据依据、工程价值、简历价值、建议完成线与不可夸大边界，不代表任何 P3 实施单元已完成。
 - [2026-07-28：P0 干净环境验收](p0-clean-environment-run-2026-07-28.md) — `VERIFIED`（用户于 2026-08-01 临时确认）；仅适用于记录中的执行快照，当前 revision 变化后仍需重跑。
 - [2026-08-20～31：C0-3 最小 Artifact 闭环](closed-loop-v1-c0-3-2026-08-20.md) — `DONE`；success/failure JUnit、远端 upload/download、digest 和 nodeid 归因已验证。

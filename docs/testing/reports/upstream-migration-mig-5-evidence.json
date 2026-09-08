@@ -1,0 +1,184 @@
+{
+  "revision": "7c88065cda77838eda02316c8c0cd75e589430ed",
+  "existing_dependency_versions_changed": {},
+  "added_dependencies": {
+    "langfuse": "4.15.1",
+    "opentelemetry-exporter-otlp-proto-http": "1.39.1",
+    "wrapt": "2.4.0"
+  },
+  "junit": {
+    "records": 193,
+    "failures": 0,
+    "errors": 0,
+    "skipped_including_xfail": 4
+  },
+  "evidence_sha256": {
+    "full-fixed.xml": "7e047307e1d8fac3176311fa265ab1da910486edaae203c43ee2698b1458fba1",
+    "full-fixed.json": "d660dd84c5ce31971a6a5a50d39fb6d0fd1658087e6f4c972869148cce1b6aae",
+    "lan-probe.json": "cb9697bb7c9caff59fe265e3d190266b5703f8a171b90bdea9f65d5865d3ae96",
+    "lan-readback.json": "32c32b480e72f6114bb64fbe8fc906c6d54d76e7fdff104625aaceb31ace4ee2"
+  },
+  "full_run": {
+    "command": [
+      "uv",
+      "run",
+      "--frozen",
+      "python",
+      "-m",
+      "pytest",
+      "-p",
+      "pytest_asyncio.plugin",
+      "tests",
+      "-q",
+      "--tb=short",
+      "--junitxml=F:\\Programme\\Agent\\NagaAgent-main\\tests\\artifacts\\upstream_migration\\mig-5\\full-fixed.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 109.53,
+    "revision": "01325272e50d9b5fe0ba097f3f2f97a73c5b3038",
+    "worktree": "MIG-5 changes not yet committed"
+  },
+  "lan_run": {
+    "command": [
+      "F:\\Programme\\Agent\\NagaAgent-main\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-p",
+      "pytest_asyncio.plugin",
+      "tests/integration/observability/test_langfuse_chat_wiring.py::test_lan_synthetic_upload_and_readback",
+      "-q",
+      "--tb=short",
+      "--junitxml=F:\\Programme\\Agent\\NagaAgent-main\\tests\\artifacts\\upstream_migration\\mig-5\\lan-probe.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 25.31,
+    "revision": "7c88065cda77838eda02316c8c0cd75e589430ed",
+    "source_sha256": {
+      "apiserver/langfuse_integration.py": "e904ffbfbd10598c8b132ca0d8e74e0334b41e1134b6ca55a176ce0a88ecf6a0",
+      "apiserver/langfuse_runtime.py": "5a53375c0349fbcf9cebe125fc7391de5c66d66627cfd9cbd3b15d2fb5813ace",
+      "apiserver/llm_service.py": "3f5a4737a2eb8c30ae1fae48f31317a141a50e452399d1650211ae51bdcf9dbe",
+      "apiserver/agentic_tool_loop.py": "a20a079b5b316008865de18d0cb05b7cc7552899724dca1c0a6c3944ecc4208f",
+      "apiserver/routes/chat.py": "7b5454a051a78ddc22184a34da4aacf58d33ade14b3112f052ba21b66ee171b2",
+      "apiserver/api_server.py": "88df31a530a2d343edba2d49bc60553fe16bccd8d59dbe25935ee4f8c5c9143c",
+      "tests/support/offline_bootstrap.py": "045e2c61ac5a4e6a646b58e28b3a5adf32b8e57ea3ac9a4e8949dd833bfe7129",
+      "tests/integration/observability/test_langfuse_chat_wiring.py": "56f48a3e26234a15e2e49624bdde37e33e01030d10a95a6cfc18a2a1d8082818",
+      "tests/unit/test_langfuse_integration.py": "1ee5f64ec663c073880c0f35dc17877b759e1d8404efed62287287f5c2e7e084",
+      "tests/unit/test_langfuse_runtime.py": "6d392902a36fc39f184d2a1a4dc526d3296a33d8242bd53bdf802550c95829f5",
+      "pyproject.toml": "f22840744a039636f47eb8c40dbd2ee69467ae198b4a5096cfd7e2d193be0aac",
+      "uv.lock": "7c38809299de78ea7025d6195d8accee29cbf736c7fa0e5c40b1e47c7356ab63"
+    },
+    "external_write": "synthetic LAN Langfuse traces only",
+    "proof": "lan-readback.json is acceptance evidence only when this run exits 0"
+  },
+  "lan_readback": {
+    "server_version": "3.172.1",
+    "base_url": "http://192.168.31.77:3000",
+    "project_id": "cmomyuxxx0006rw077ndvlqeu",
+    "sdk_version": "4.15.1",
+    "revision": "7c88065cda77838eda02316c8c0cd75e589430ed",
+    "worktree": "MIG-5 implementation under verification",
+    "traces": [
+      {
+        "trace_id": "03113930b57d2212f2dd1b2a771b45a6",
+        "name": "chat.request",
+        "session_id": "522e3274-d94b-4433-98d1-5af2f40f522b",
+        "observations": [
+          {
+            "id": "32c7996d6250c16b",
+            "name": "chat.request",
+            "type": "SPAN",
+            "parentObservationId": null,
+            "level": "DEFAULT",
+            "startTime": "2026-09-08T08:06:24.402Z",
+            "endTime": "2026-09-08T08:06:24.408Z"
+          },
+          {
+            "id": "244f6d067ac5eb5b",
+            "name": "llm.generation",
+            "type": "GENERATION",
+            "parentObservationId": "32c7996d6250c16b",
+            "level": "DEFAULT",
+            "startTime": "2026-09-08T08:06:24.405Z",
+            "endTime": "2026-09-08T08:06:24.407Z"
+          }
+        ],
+        "synthetic_content_readback": true,
+        "parentage_verified": true
+      },
+      {
+        "trace_id": "1cc6f5b8332388ce533e546375f466ab",
+        "name": "chat.stream",
+        "session_id": "8f0f88fb-6f5d-4416-a3db-0f69de6e5084",
+        "observations": [
+          {
+            "id": "02d4b58b2544faab",
+            "name": "llm.generation",
+            "type": "GENERATION",
+            "parentObservationId": "3337d3343b01f9b7",
+            "level": "DEFAULT",
+            "startTime": "2026-09-08T08:06:24.424Z",
+            "endTime": "2026-09-08T08:06:24.426Z"
+          },
+          {
+            "id": "3337d3343b01f9b7",
+            "name": "chat.stream",
+            "type": "SPAN",
+            "parentObservationId": null,
+            "level": "DEFAULT",
+            "startTime": "2026-09-08T08:06:24.417Z",
+            "endTime": "2026-09-08T08:06:24.435Z"
+          },
+          {
+            "id": "b1b4f2beb7864ba7",
+            "name": "tool.synthetic.lookup",
+            "type": "TOOL",
+            "parentObservationId": "3337d3343b01f9b7",
+            "level": "DEFAULT",
+            "startTime": "2026-09-08T08:06:24.428Z",
+            "endTime": "2026-09-08T08:06:24.430Z"
+          },
+          {
+            "id": "36e7c88e3878d290",
+            "name": "llm.generation",
+            "type": "GENERATION",
+            "parentObservationId": "3337d3343b01f9b7",
+            "level": "DEFAULT",
+            "startTime": "2026-09-08T08:06:24.422Z",
+            "endTime": "2026-09-08T08:06:24.423Z"
+          },
+          {
+            "id": "24272fa4574b31ef",
+            "name": "llm.generation",
+            "type": "GENERATION",
+            "parentObservationId": "3337d3343b01f9b7",
+            "level": "DEFAULT",
+            "startTime": "2026-09-08T08:06:24.431Z",
+            "endTime": "2026-09-08T08:06:24.434Z"
+          }
+        ],
+        "synthetic_content_readback": true,
+        "parentage_verified": true
+      }
+    ],
+    "real": [
+      "FastAPI route",
+      "agentic loop",
+      "LLM service",
+      "tool dispatcher",
+      "Langfuse SDK",
+      "LAN server"
+    ],
+    "synthetic": [
+      "provider output",
+      "MCP result",
+      "prompt",
+      "user input"
+    ],
+    "isolated": [
+      "remote memory",
+      "persistence",
+      "other TCP destinations"
+    ]
+  },
+  "verification_note": "Full regression ran on the uncommitted MIG-5 worktree based on 01325272; the same implementation was committed as 7c88065c. LAN verification was repeated after that code commit. Documentation-only changes follow."
+}

@@ -1,12 +1,13 @@
 # Upstream 迁移后的测试基线
 
-> 核对日期：2026-09-07 · 代码 revision：`981821be7b971c4123c8f41d7a77f176970cd872`\
+> 核对日期：2026-09-08 · 当前代码 revision：`7c88065cda77838eda02316c8c0cd75e589430ed`\
 > 这是当前分支的测试事实入口。旧 C0 GitHub 结果仍只属于其原 revision。
 
 ## 1. 现在具备什么
 
-新 upstream 产品代码与旧测试基座已能共同运行。完整本地回归为 179 passed、1 skipped、2 xfailed；
-另有 12 个 subtests passed。迁移没有补齐所有业务缺口，也没有自动接通 Langfuse。
+新 upstream 产品代码与旧测试基座已能共同运行。MIG-5 完整本地回归为 189 passed、2 skipped、2 xfailed；
+另有 12 个 subtests passed。Langfuse runtime 已在原 LAN 实例完成合成上传/读回，详见
+[MIG-5 journal](../reports/upstream-migration-mig-5-execution-journal.md)。这不代表所有业务缺口已补齐。
 逐次证据、完整命令和环境在 [MIG-4 报告](../reports/upstream-migration-mig-4-execution-journal.md)，
 当前进度见 [CURRENT_PROGRESS](../CURRENT_PROGRESS.md)。
 
@@ -22,7 +23,7 @@
 | SSE 输出与收尾 / chat route | [Resilience](../../../tests/integration/chat_stream/test_resilience.py)：正常与异常终止、active cleanup、save spy、notify/compression fallback，7 passed + 1 xfail | fake Loop 或真实 Loop + fake LLM；保存调用不等于持久化回读 | Stream workflow 只选正常/中途异常 2 条；本地三次通过 |
 | 多轮编排 / Agentic Loop | [Loop unit](../../../tests/unit/agentic_tool_loop/)：停止/summary、dispatch、消息回注、压缩事件、归因，19 passed + 1 xfail | LLM、具体工具、queue/compression 按用例替换；不证明真实 MCP、Memory | 当前两个 workflow 都不选这一组 |
 | 任务级受控回归 / Golden runner | [五个 YAML 场景](../../../tests/golden_cases/cases/)与 runner/schema：任务、工具结果回注和规则检查 | 固定模型输出、工具结果与上下文；不证明生产 prompt、真实回答质量或全链路 E2E | 本地执行；未接入当前两个 PR job |
-| 观测适配边界 / Langfuse adapter | [58 cases](../../../tests/unit/test_langfuse_integration.py)：payload、异常隔离、cleanup | fake SDK；运行时调用点和 SDK 依赖未接回，不能产生 trace | 本地执行；`NOT_WIRED` to CI |
+| 观测适配与 runtime / Langfuse | [当前说明](langfuse-observability.md)：58 adapter cases、9 runtime cases、1 wiring case；LAN opt-in 另行通过 | adapter fake SDK / runtime 真 SDK 内存导出 / LAN 真服务分开验证；provider 和具体工具仍固定，Memory 禁用 | 离线本地 + LAN `OPT_IN`；CI `NOT_WIRED` |
 | 上游现有单测 / 各模块 | config/tools、Live2D assets、updates/TTS 的原测试，56 passed + 12 subtests passed | 保留各文件原有单测边界，不扩张成 UI/音频/更新服务 E2E | 本地执行；未新增其 CI selection |
 | 结果归因与展示 / testing support | [Quality helper](../../../tests/support/quality_gate.py)、JUnit、Allure 原始结果 | 32 条子集的诊断摘要；无有效历史性能比较、无 Allure HTML 验收 | pytest exit code 才决定现有 job；Quality/Allure 未接入两个 workflow |
 
@@ -36,6 +37,8 @@
 并对已检查的 Python TCP 连接入口建立拒绝和记录机制。即使应用吞掉网络错误，teardown / session
 仍让 pytest 失败。标准库 socketpair 的 Windows asyncio self-pipe 被单独放行。
 这是测试依赖控制，不是进程级安全沙箱，也不保护未检查的任意 subprocess / native networking。
+MIG-5 增加独立的 LAN opt-in：仅显式验收期间放行保存的私网 IP:port，其余 TCP 拒绝和吞异常检测保留；
+没有用 real-LLM 开关绕过离线基座。
 
 产品 Remote Memory 没有删除；SSE fixture 中的 client 固定为 None，真实认证、query、fallback
 继续标为 `DELAYED`。真实 LLM 只有一个 opt-in case，本次 skipped。
@@ -45,9 +48,9 @@
 
 - **CI 配置**：两个 workflow 已迁入，精确 selection、JUnit 与 always-upload 契约已核对。
   新 revision 尚未 push / 运行 GitHub Actions；Required 状态未知，未修改规则。
-- **报告**：完整 JUnit 与 Allure 都有 182 条记录；两个 xfail 在这两者中记为 skipped。
+- **报告**：MIG-4 JUnit 与 Allure 都有 182 条记录；MIG-5 JUnit 有 193 条、其中 4 skipped（两个 opt-in + 两个 xfail）。MIG-5 没有重验 Allure。
   Quality Gate 只聚合 32 条 API/Loop 子集，不能用其 total 代表整个测试套件。
-- **代码基线**：`981821be` 可用于后续开发和回归比较；不等于性能标准。
+- **代码基线**：MIG-4 `981821be` 保留；当前 runtime 基线为 MIG-5 `7c88065c`，都不等于性能标准。
   旧 `tests/baseline/quality_gate/*.json` 是来源版本数据；默认 helper 仍会读取它们。
   MIG-4 显式使用独立 advisory 目录，`baseline_bootstrap=true`、delta=null，仅验证输出链路，没有晋升数值基线。
 
@@ -67,8 +70,9 @@
 
 ## 6. 未完成范围与阅读规则
 
-user-stop 与跨轮 duplicate tool id 仍为两个 xfail；真实外部服务、完整 E2E、性能标准和 Langfuse runtime
-仍待后续工作。P3-0 未启动，迁移前置条件已满足。
+user-stop 与跨轮 duplicate tool id 仍为两个 xfail；真实模型/Memory/MCP、完整 E2E 和性能标准仍待后续工作。
+Langfuse runtime 已可用；其当前真实 LLM 路径测试结束于 `round_end` / 迭代耗尽，并非旧 fake-loop 的 `[DONE]`。
+该协议差异仍应在后续业务契约梳理中处理，MIG-5 没有修改产品 SSE。P3-0 未启动。
 
 本页、CI 页当前状态和 Langfuse 当前边界已同步。各 Part 的断言/owner 可以继续查阅，
 但旧运行时长、PR Required、实施优先级及产品整体架构仍须按原 revision 阅读；

@@ -25,8 +25,9 @@ The migration order is: documentation boundary (MIG-1), preserved Langfuse adapt
 As of 2026-09-07, MIG-0 through MIG-4 are complete within the local migration scope.
 The nominated code/testing baseline is `981821be`: 179 passed, 1 skipped, 2 xfailed,
 plus 12 passed subtests in an independent frozen-lock environment. This includes
-58 adapter cases and the preserved upstream tests. Test/CI assets are now present;
-target GitHub execution, Required rules, Langfuse runtime wiring and SDK dependencies
-remain unverified or absent. Testing status and selected architecture entry points
+58 adapter cases and the preserved upstream tests. On 2026-09-08, user-authorized
+MIG-5 restored Langfuse runtime/SDK at `7c88065c`, with 189 passed / 2 skipped /
+2 xfailed + 12 subtests and successful synthetic LAN ingestion/readback.
+Target GitHub execution and Required rules remain unverified. Testing status and selected architecture entry points
 are reconciled; the entire historical architecture tree is not fully re-certified.
 See the testing migration status for the exact boundaries.
