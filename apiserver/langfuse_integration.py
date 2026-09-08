@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import logging
 import os
+import asyncio
+import json
+import re
+import threading
 from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
@@ -13,8 +17,8 @@ from typing import Any, Callable, Dict, List, Optional
 # - observability failures must never change chat/tool runtime behavior
 # - large prompt/output payloads must be compacted before leaving the process
 #
-# MIG-2 migrates this adapter only. Runtime callers and the optional SDK dependency
-# are not wired on the upstream-based branch. Compaction is not secret redaction.
+# MIG-5 restores runtime callers. Raw content is excluded unless explicitly opted
+# in; compaction alone is not redaction, so all SDK writes also apply payload policy.
 
 logger = logging.getLogger(__name__)
 
@@ -46,13 +50,15 @@ def _load_project_dotenv() -> None:
         if _ENV_PATH.exists():
             load_dotenv(_ENV_PATH, override=False)
     except Exception as exc:
-        logger.debug("[Langfuse] Failed to load .env: %s", exc)
+        logger.debug("[Langfuse] Failed to load .env (%s)", type(exc).__name__)
 
 
 def _has_langfuse_credentials() -> bool:
     """Treat Langfuse as enabled only when the full credential set is present."""
     _load_project_dotenv()
-    return all((os.getenv(key) or "").strip() for key in _LANGFUSE_ENV_KEYS)
+    return os.getenv("LANGFUSE_TRACING_ENABLED", "true").strip().lower() not in {"false", "0", "off"} and all(
+        (os.getenv(key) or "").strip() for key in _LANGFUSE_ENV_KEYS
+    )
 
 
 def is_langfuse_enabled() -> bool:
@@ -79,15 +85,79 @@ def get_langfuse_client() -> Any | None:
         return None
 
     try:
-        from langfuse import get_client
+        from langfuse import Langfuse
+        from opentelemetry.sdk.trace import TracerProvider
 
-        _langfuse_client = get_client()
+        _langfuse_client = Langfuse(
+            public_key=os.environ["LANGFUSE_PUBLIC_KEY"],
+            secret_key=os.environ["LANGFUSE_SECRET_KEY"],
+            base_url=os.environ["LANGFUSE_BASE_URL"],
+            timeout=3,
+            mask=redact_langfuse_payload,
+            # Do not export unrelated global OTel instrumentation (e.g. memory).
+            tracer_provider=TracerProvider(),
+        )
         logger.info("[Langfuse] Client initialized")
     except Exception as exc:
-        logger.warning("[Langfuse] Initialization failed: %s", exc)
+        logger.warning("[Langfuse] Initialization failed (%s)", type(exc).__name__)
         _langfuse_client = None
 
     return _langfuse_client
+
+
+def redact_langfuse_payload(*, data: Any, **_kwargs: Any) -> Any:
+    """Bound and redact opted-in payloads; not a guarantee of arbitrary PII removal."""
+    sensitive = re.compile(r"api.?key|secret|password|authorization|cookie|access.?token|refresh.?token|user.?token", re.I)
+    known_secrets = [value for key, value in os.environ.items()
+                     if sensitive.search(key) and len(value) >= 8]
+
+    def redact(value, depth=4):
+        if depth <= 0:
+            return "<truncated>"
+        if isinstance(value, dict):
+            items = list(value.items())[:40]
+            result = {str(key)[:128]: "<redacted>" if sensitive.search(str(key)) else redact(item, depth - 1)
+                      for key, item in items}
+            if len(value) > len(items):
+                result['__truncated__'] = f"{len(value) - len(items)} more keys"
+            return result
+        if isinstance(value, (list, tuple, set)):
+            items = list(value)[:20]
+            result = [redact(item, depth - 1) for item in items]
+            if len(value) > len(items):
+                result.append(f"<truncated:{len(value) - len(items)} more items>")
+            return result
+        if isinstance(value, str):
+            for secret in known_secrets:
+                value = value.replace(secret, "<redacted>")
+            value = re.sub(r"(?i)bearer\s+[^\s\"'<>]+", "Bearer <redacted>", value)
+            value = re.sub(r"\b(?:sk|pk)[-_][A-Za-z0-9_-]{8,}", "<redacted>", value)
+            value = re.sub(r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}", "<redacted-email>", value)
+            return value if len(value) <= 4000 else "<truncated>"
+        if value is None or isinstance(value, (bool, int, float)):
+            return value
+        if isinstance(value, bytes):
+            return f"<bytes:{len(value)}>"
+        return redact(str(value), depth - 1)
+
+    try:
+        result = redact(data)
+        encoded = json.dumps(result, ensure_ascii=False)
+        return result if len(encoded.encode('utf-8')) <= 16000 else "<payload exceeds 16000 bytes>"
+    except Exception:
+        return "<payload unavailable>"
+
+
+def observation_fields(fields: Dict[str, Any]) -> Dict[str, Any]:
+    """Central outbound policy shared by legacy helpers and runtime observations."""
+    result = dict(fields)
+    if os.getenv("LANGFUSE_CAPTURE_CONTENT", "false").strip().lower() not in {"true", "1", "on"}:
+        result.pop("input", None)
+        result.pop("output", None)
+    for key in ("input", "output", "metadata", "status_message", "name"):
+        if key in result:
+            result[key] = redact_langfuse_payload(data=result[key])
+    return result
 
 
 def compact_langfuse_payload(value: Any, *, max_depth: int = 4, max_string: int = 4000) -> Any:
@@ -150,7 +220,7 @@ def _safe_sdk_context(factory: Callable[[], Any]):
         observation = candidate.__enter__()
         context = candidate  # Only an entered context may be exited.
     except Exception as exc:
-        logger.debug("[Langfuse] Context start failed: %s", exc)
+        logger.debug("[Langfuse] Context start failed (%s)", type(exc).__name__)
 
     try:
         yield observation
@@ -160,14 +230,14 @@ def _safe_sdk_context(factory: Callable[[], Any]):
             try:
                 context.__exit__(type(error), error, error.__traceback__)
             except Exception as exc:
-                logger.debug("[Langfuse] Context cleanup failed: %s", exc)
+                logger.debug("[Langfuse] Context cleanup failed (%s)", type(exc).__name__)
         raise
     else:
         if context is not None:
             try:
                 context.__exit__(None, None, None)
             except Exception as exc:
-                logger.debug("[Langfuse] Context cleanup failed: %s", exc)
+                logger.debug("[Langfuse] Context cleanup failed (%s)", type(exc).__name__)
 
 
 def start_observation(*, name: str, as_type: str = "span", **kwargs: Any):
@@ -177,7 +247,7 @@ def start_observation(*, name: str, as_type: str = "span", **kwargs: Any):
         return nullcontext(None)
 
     return _safe_sdk_context(
-        lambda: client.start_as_current_observation(name=name, as_type=as_type, **kwargs)
+        lambda: client.start_as_current_observation(**observation_fields(dict(name=name, as_type=as_type, **kwargs)))
     )
 
 
@@ -187,9 +257,9 @@ def update_observation(observation: Any | None, **kwargs: Any) -> None:
         return
 
     try:
-        observation.update(**kwargs)
+        observation.update(**observation_fields(kwargs))
     except Exception as exc:
-        logger.debug("[Langfuse] Failed to update observation: %s", exc)
+        logger.debug("[Langfuse] Failed to update observation (%s)", type(exc).__name__)
 
 
 def propagate_langfuse_attributes(
@@ -232,7 +302,7 @@ def propagate_langfuse_attributes(
 
         return _safe_sdk_context(lambda: propagate_attributes(**propagate_kwargs))
     except Exception as exc:
-        logger.debug("[Langfuse] Failed to propagate attributes: %s", exc)
+        logger.debug("[Langfuse] Failed to propagate attributes (%s)", type(exc).__name__)
         return nullcontext(None)
 
 
@@ -290,7 +360,7 @@ def start_llm_generation_observation(
     return start_observation(
         name=name,
         as_type="generation",
-        input=compact_langfuse_payload(messages),
+        input=messages,
         model=model,
         metadata=metadata,
         model_parameters=build_langfuse_model_parameters(
@@ -319,7 +389,7 @@ def complete_llm_generation_observation(
         output["tool_calls"] = tool_calls
 
     update_kwargs: Dict[str, Any] = {
-        "output": compact_langfuse_payload(output),
+        "output": output,
     }
     usage_details = extract_langfuse_usage_details(response)
     if usage_details is not None:
@@ -367,7 +437,7 @@ def start_tool_observation(
         with start_observation(
             name=get_langfuse_tool_observation_name(call),
             as_type="tool",
-            input=compact_langfuse_payload(call),
+            input=call,
             metadata={
                 "session_id": session_id,
                 "source_agent_id": source_agent_id,
@@ -382,7 +452,7 @@ def complete_tool_observation(observation: Any | None, result: Dict[str, Any]) -
     is_error = result.get("status") == "error"
     update_observation(
         observation,
-        output=compact_langfuse_payload(result),
+        output=result,
         level="ERROR" if is_error else None,
         status_message=str(result.get("result", ""))[:500] if is_error else None,
     )
@@ -406,13 +476,13 @@ def shutdown_langfuse() -> None:
         if hasattr(client, "flush"):
             client.flush()
     except Exception as exc:
-        logger.debug("[Langfuse] Flush failed: %s", exc)
+        logger.debug("[Langfuse] Flush failed (%s)", type(exc).__name__)
 
     try:
         if hasattr(client, "shutdown"):
             client.shutdown()
     except Exception as exc:
-        logger.debug("[Langfuse] Shutdown failed: %s", exc)
+        logger.debug("[Langfuse] Shutdown failed (%s)", type(exc).__name__)
 
 
 def flush_langfuse() -> None:
@@ -425,4 +495,29 @@ def flush_langfuse() -> None:
         if hasattr(client, "flush"):
             client.flush()
     except Exception as exc:
-        logger.debug("[Langfuse] Flush failed: %s", exc)
+        logger.debug("[Langfuse] Flush failed (%s)", type(exc).__name__)
+
+
+async def shutdown_langfuse_async(timeout: float = 2.0) -> bool:
+    """Bound the API lifecycle wait, without a default-executor thread keeping it open.
+
+    A timed-out daemon may finish later; this does not guarantee delivery or forcibly
+    terminate SDK work. No per-request synchronous flush is performed.
+    """
+    if _langfuse_client is None:
+        return True
+    completed = threading.Event()
+
+    def cleanup():
+        try:
+            shutdown_langfuse()
+        finally:
+            completed.set()
+
+    threading.Thread(target=cleanup, name="naga-langfuse-shutdown", daemon=True).start()
+    deadline = asyncio.get_running_loop().time() + max(0.0, timeout)
+    while not completed.is_set() and asyncio.get_running_loop().time() < deadline:
+        await asyncio.sleep(0.01)
+    if not completed.is_set():
+        logger.warning("[Langfuse] Shutdown wait exceeded deadline; delivery not confirmed")
+    return completed.is_set()

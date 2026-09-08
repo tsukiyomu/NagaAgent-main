@@ -7,6 +7,8 @@ developer configuration, home-directory state, dotenv credentials or sockets.
 from __future__ import annotations
 
 import inspect
+from contextlib import contextmanager
+import ipaddress
 import os
 from pathlib import Path
 import socket
@@ -20,6 +22,7 @@ class OfflineBootstrap:
         self.patch = pytest.MonkeyPatch()
         self.attempts: list[str] = []
         self.directory: tempfile.TemporaryDirectory | None = None
+        self._allowed_endpoint = None
 
     def install(self):
         if os.environ.get("NAGA_ENABLE_REAL_LLM_TESTS") == "1":
@@ -45,6 +48,7 @@ class OfflineBootstrap:
 
         original_connect = socket.socket.connect
         original_connect_ex = socket.socket.connect_ex
+        original_create_connection = socket.create_connection
 
         def self_pipe():
             # Windows asyncio creates a private socketpair through loopback TCP.
@@ -56,14 +60,29 @@ class OfflineBootstrap:
             raise RuntimeError(f"external connection forbidden in offline tests: {target!r}")
 
         def connect(sock, target):
-            return original_connect(sock, target) if self_pipe() else forbidden(target)
+            return original_connect(sock, target) if self_pipe() or target == self._allowed_endpoint else forbidden(target)
 
         def connect_ex(sock, target):
-            return original_connect_ex(sock, target) if self_pipe() else forbidden(target)
+            return original_connect_ex(sock, target) if self_pipe() or target == self._allowed_endpoint else forbidden(target)
 
         self.patch.setattr(socket.socket, "connect", connect)
         self.patch.setattr(socket.socket, "connect_ex", connect_ex)
-        self.patch.setattr(socket, "create_connection", lambda target, *a, **kw: forbidden(target))
+        self.patch.setattr(socket, "create_connection", lambda target, *a, **kw:
+                           original_create_connection(target, *a, **kw) if target == self._allowed_endpoint else forbidden(target))
+
+    @contextmanager
+    def allow_langfuse_lan(self, host: str, port: int):
+        """Explicit synthetic probe only; every other TCP destination stays blocked."""
+        if os.environ.get('NAGA_ENABLE_LANGFUSE_LAN_TESTS') != '1':
+            raise RuntimeError('LAN Langfuse probe is not explicitly enabled')
+        if not ipaddress.ip_address(host).is_private or not 0 < port < 65536:
+            raise ValueError('Probe requires an exact private IP and port')
+        previous = self._allowed_endpoint
+        self._allowed_endpoint = (host, port)
+        try:
+            yield
+        finally:
+            self._allowed_endpoint = previous
 
     def close(self):
         self.patch.undo()

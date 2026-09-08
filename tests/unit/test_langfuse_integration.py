@@ -37,6 +37,9 @@ def isolated_adapter(monkeypatch, tmp_path):
     monkeypatch.setattr(langfuse_integration, "_client_initialized", False)
     monkeypatch.setattr(langfuse_integration, "_langfuse_client", None)
     monkeypatch.setitem(sys.modules, "langfuse", None)
+    # Legacy helper payload contracts explicitly opt into synthetic content.
+    monkeypatch.setenv("LANGFUSE_CAPTURE_CONTENT", "true")
+    monkeypatch.setenv("LANGFUSE_TRACING_ENABLED", "true")
     for key in langfuse_integration._LANGFUSE_ENV_KEYS:
         monkeypatch.delenv(key, raising=False)
 
@@ -335,7 +338,7 @@ def test_incomplete_configuration_is_disabled(monkeypatch, missing_key):
     _set_credentials(monkeypatch)
     monkeypatch.setenv(missing_key, "  ")
     calls = []
-    monkeypatch.setitem(sys.modules, "langfuse", SimpleNamespace(get_client=lambda: calls.append(True)))
+    monkeypatch.setitem(sys.modules, "langfuse", SimpleNamespace(Langfuse=lambda **kwargs: calls.append(True)))
     assert langfuse_integration.get_langfuse_client() is None
     assert not langfuse_integration.is_langfuse_enabled()
     assert calls == []
@@ -347,13 +350,13 @@ def test_client_initialization_is_cached_on_success_and_failure(monkeypatch, fai
     calls = []
     client = object()
 
-    def get_client():
+    def get_client(**kwargs):
         calls.append(True)
         if failure:
             raise RuntimeError("synthetic init failure")
         return client
 
-    monkeypatch.setitem(sys.modules, "langfuse", SimpleNamespace(get_client=get_client))
+    monkeypatch.setitem(sys.modules, "langfuse", SimpleNamespace(Langfuse=get_client))
     assert langfuse_integration.get_langfuse_client() is (None if failure else client)
     assert langfuse_integration.get_langfuse_client() is (None if failure else client)
     assert calls == [True]

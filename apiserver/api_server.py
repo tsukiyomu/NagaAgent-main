@@ -42,6 +42,7 @@ from .message_manager import message_manager  # 导入统一的消息管理器
 
 from .llm_service import get_llm_service  # 导入LLM服务
 from . import naga_auth  # NagaCAS 认证模块
+from .langfuse_integration import is_langfuse_enabled, shutdown_langfuse_async
 
 # 记录哪些会话曾发送过图片，后续消息继续走 VLM 直到新会话
 _vlm_sessions: set = set()
@@ -92,6 +93,7 @@ async def lifespan(app: FastAPI):
     """应用生命周期管理"""
     try:
         print("[INFO] 正在初始化API服务器...")
+        logger.info("[Langfuse] observability %s", "enabled" if is_langfuse_enabled() else "disabled")
         # 对话核心功能已集成到apiserver
 
         # 加载活跃角色配置
@@ -116,6 +118,7 @@ async def lifespan(app: FastAPI):
         sys.exit(1)
     finally:
         print("[INFO] 正在清理资源...")
+        await shutdown_langfuse_async()
         # MCP服务现在由mcpserver独立管理，无需清理
         try:
             from apiserver.telemetry import get_telemetry_manager

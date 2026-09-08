@@ -18,6 +18,7 @@ from system.config import get_config, get_server_port
 from apiserver.agent_directory import format_agent_directory_text, resolve_agent_descriptor
 from apiserver import naga_auth
 from apiserver.tool_schemas import resolve_mcp_func_name
+from apiserver.langfuse_runtime import trace_tool
 
 logger = logging.getLogger(__name__)
 
@@ -1166,15 +1167,17 @@ async def execute_tool_calls(
     for call in tool_calls:
         agent_type = call.get("agentType", "")
         if agent_type == "mcp":
-            tasks.append(_execute_mcp_call(call, source_agent_id=source_agent_id))
+            task = _execute_mcp_call(call, source_agent_id=source_agent_id)
         elif agent_type == "openclaw":
-            tasks.append(_execute_openclaw_call(call, session_id))
+            task = _execute_openclaw_call(call, session_id)
         elif agent_type in ("tool", "openclaw_tool"):
-            tasks.append(_execute_openclaw_tool_call(call, source_agent_id=source_agent_id))
+            task = _execute_openclaw_tool_call(call, source_agent_id=source_agent_id)
         elif agent_type == "naga_control":
-            tasks.append(_execute_naga_control(call))
+            task = _execute_naga_control(call)
         else:
             logger.warning(f"[AgenticLoop] 未知agentType: {agent_type}, 跳过: {call}")
+            continue
+        tasks.append(trace_tool(task, call, session_id, source_agent_id))
 
     if not tasks:
         return []

@@ -36,6 +36,7 @@ from apiserver.message_manager import message_manager
 from apiserver.llm_service import get_llm_service
 from apiserver.response_util import extract_message
 from apiserver.telemetry import emit_telemetry
+from apiserver.langfuse_runtime import trace_chat, trace_chat_stream, set_chat_session
 from apiserver.api_server import (
     ChatRequest,
     ChatResponse,
@@ -567,6 +568,7 @@ async def _send_ai_response_directly(session_id: str, response_text: str):
 
 
 @router.post("/chat", response_model=ChatResponse)
+@trace_chat
 async def chat(request: ChatRequest):
     """普通对话接口 - 仅处理纯文本对话"""
 
@@ -587,6 +589,7 @@ async def chat(request: ChatRequest):
             skill_labels = "，".join(f"【{s.strip()}】" for s in request.skill.split(",") if s.strip())
             user_message = f"调度技能{skill_labels}：{user_message}"
         session_id = message_manager.create_session(request.session_id, temporary=request.temporary)
+        set_chat_session(session_id)
         emit_telemetry(
             "chat_send",
             {
@@ -724,6 +727,7 @@ async def chat_stream(request: ChatRequest):
 
             # 获取或创建会话ID
             session_id = message_manager.create_session(request.session_id, temporary=request.temporary)
+            set_chat_session(session_id)
             emit_telemetry(
                 "chat_send",
                 {
@@ -1198,7 +1202,7 @@ async def chat_stream(request: ChatRequest):
                     pass
 
     return StreamingResponse(
-        generate_response(),
+        trace_chat_stream(generate_response(), request),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

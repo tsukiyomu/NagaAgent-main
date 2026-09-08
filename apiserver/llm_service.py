@@ -20,6 +20,7 @@ from fastapi import FastAPI, HTTPException
 from system.config_value_utils import is_placeholder_api_key
 from system.config import get_config
 from . import naga_auth
+from .langfuse_runtime import traced_completion, close_observed_stream
 
 # 配置日志
 logger = logging.getLogger("LLMService")
@@ -250,7 +251,7 @@ class LLMService:
             config_error = self._local_api_config_error(llm_params)
             if config_error:
                 return LLMResponse(content=config_error)
-            response = await acompletion(
+            response = await traced_completion(acompletion,
                 model=model_name,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=self._normalize_temperature(model_name, temperature),
@@ -313,7 +314,7 @@ class LLMService:
                 final_base,
                 provider_hint,
             )
-            response = await acompletion(
+            response = await traced_completion(acompletion,
                 model=model_name,
                 messages=prepared_messages,
                 temperature=self._normalize_temperature(model_name, temperature),
@@ -367,6 +368,7 @@ class LLMService:
         auth_retried = False
 
         for attempt in range(max_attempts):
+            response = None
             try:
                 # 如果提供了 model_override，使用覆盖参数替代默认配置
                 if model_override:
@@ -433,7 +435,7 @@ class LLMService:
                     if get_config().api.api_format != "anthropic":
                         call_params["parallel_tool_calls"] = True
 
-                response = await acompletion(**call_params)
+                response = await traced_completion(acompletion, observation_attempt=attempt + 1, **call_params)
 
                 # 累积器：tool_calls 增量拼接
                 pending_tool_calls: Dict[int, Dict[str, str]] = {}  # {index: {id, name, arguments}}
@@ -538,6 +540,8 @@ class LLMService:
                 logger.error(f"流式聊天调用失败: {e}")
                 yield self._format_sse_chunk("content", f"流式调用出错: {str(e)}")
                 return
+            finally:
+                await close_observed_stream(response)
 
     def _format_sse_chunk(self, chunk_type: str, text: str) -> str:
         """格式化 SSE 数据块

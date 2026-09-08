@@ -28,6 +28,8 @@ dependencies = [
     "tiktoken>=0.11.0",
     "langchain-openai>=1.1.0",
     "langchain-community>=0.3.30",
+    # ---------- 可选运行时观测（缺配置时 no-op） ----------
+    "langfuse==4.15.1",
     # ---------- 异步 / 任务 ----------
     "aiohttp>=3.12.0",
     "aiofiles>=24.1.0",
