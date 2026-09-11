@@ -28,6 +28,14 @@ plus 12 passed subtests in an independent frozen-lock environment. This includes
 58 adapter cases and the preserved upstream tests. On 2026-09-08, user-authorized
 MIG-5 restored Langfuse runtime/SDK at `7c88065c`, with 189 passed / 2 skipped /
 2 xfailed + 12 subtests and successful synthetic LAN ingestion/readback.
-Target GitHub execution and Required rules remain unverified. Testing status and selected architecture entry points
+At that migration checkpoint, target GitHub execution and Required rules were unverified. Testing status and selected architecture entry points
 are reconciled; the entire historical architecture tree is not fully re-certified.
 See the testing migration status for the exact boundaries.
+
+On 2026-09-11, P3-0 published code baseline `357a8a6f` to
+`tsukiyomu/NagaAgent-main` on `codex/upstream-langfuse-sync`. Both manual GitHub
+Smoke / Stream runs passed; downloaded JUnit ZIP digests and testcase identities
+were verified against the local baseline. PR #2 was closed without merging, and
+its evidence branch was preserved. Main and Required rules were not changed.
+See the [P3-0 journal](testing/reports/p3-0-execution-journal.md). Historical architecture
+details remain `PARTIAL`; this is not full product or release acceptance.

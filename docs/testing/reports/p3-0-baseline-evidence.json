@@ -1,0 +1,2050 @@
+{
+  "work_unit": "P3-0",
+  "run_id": "P3-0-2026-09-11",
+  "status": "DONE",
+  "generated_utc": "2026-09-11T08:00:44.693232+00:00",
+  "branch": "codex/upstream-langfuse-sync",
+  "revision": "357a8a6f553882fd68ac9c951b0ae92422ccae1c",
+  "scope": "baseline reconciliation and authorized CI publication; no product, test, CI configuration, rules, deployment or real-service changes",
+  "remote_target": "tsukiyomu/NagaAgent-main",
+  "owner_pr2_decision": {
+    "checked_utc": "2026-09-11T07:46:12.363351+00:00",
+    "owner_decision": "2026-09-11: close PR #2, do not merge",
+    "before": {
+      "number": 2,
+      "html_url": "https://github.com/tsukiyomu/NagaAgent-main/pull/2",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "closed_at": null,
+      "merged_at": null,
+      "head_sha": "d6553a96f6987c5f58fdafddb99fc28e19c72eb0",
+      "head_ref": "codex/c0-4-intentional-red",
+      "base_ref": "main"
+    },
+    "after": {
+      "number": 2,
+      "html_url": "https://github.com/tsukiyomu/NagaAgent-main/pull/2",
+      "state": "closed",
+      "draft": false,
+      "merged": false,
+      "closed_at": "2026-09-11T07:46:09Z",
+      "merged_at": null,
+      "head_sha": "d6553a96f6987c5f58fdafddb99fc28e19c72eb0",
+      "head_ref": "codex/c0-4-intentional-red",
+      "base_ref": "main"
+    },
+    "evidence_branch_preserved": true
+  },
+  "new_remote_runs": [
+    {
+      "id": 34576480832,
+      "html_url": "https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576480832",
+      "name": "PR Stream Contract Gate",
+      "path": ".github/workflows/pr-stream-contract-gate.yml",
+      "head_branch": "codex/upstream-langfuse-sync",
+      "head_sha": "357a8a6f553882fd68ac9c951b0ae92422ccae1c",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "run_attempt": 1,
+      "created_at": "2026-09-11T07:53:04Z",
+      "updated_at": "2026-09-11T07:53:26Z",
+      "jobs": [
+        {
+          "id": 103189985834,
+          "name": "Stream Contract Gate",
+          "html_url": "https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576480832/job/103189985834",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-09-11T07:53:07Z",
+          "completed_at": "2026-09-11T07:53:25Z",
+          "runner_name": "GitHub Actions 1000000062",
+          "runner_labels": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:07Z",
+              "completed_at": "2026-09-11T07:53:08Z"
+            },
+            {
+              "name": "Checkout",
+              "number": 2,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:08Z",
+              "completed_at": "2026-09-11T07:53:11Z"
+            },
+            {
+              "name": "Setup Python 3.11",
+              "number": 3,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:11Z",
+              "completed_at": "2026-09-11T07:53:12Z"
+            },
+            {
+              "name": "Setup uv",
+              "number": 4,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:12Z",
+              "completed_at": "2026-09-11T07:53:13Z"
+            },
+            {
+              "name": "Install dependencies (project + test)",
+              "number": 5,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:13Z",
+              "completed_at": "2026-09-11T07:53:16Z"
+            },
+            {
+              "name": "Run stream contract blocking tests",
+              "number": 6,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:16Z",
+              "completed_at": "2026-09-11T07:53:22Z"
+            },
+            {
+              "name": "Upload stream contract JUnit artifact",
+              "number": 7,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:22Z",
+              "completed_at": "2026-09-11T07:53:23Z"
+            },
+            {
+              "name": "Post Setup uv",
+              "number": 12,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:23Z",
+              "completed_at": "2026-09-11T07:53:23Z"
+            },
+            {
+              "name": "Post Setup Python 3.11",
+              "number": 13,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:23Z",
+              "completed_at": "2026-09-11T07:53:23Z"
+            },
+            {
+              "name": "Post Checkout",
+              "number": 14,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:23Z",
+              "completed_at": "2026-09-11T07:53:23Z"
+            },
+            {
+              "name": "Complete job",
+              "number": 15,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:23Z",
+              "completed_at": "2026-09-11T07:53:23Z"
+            }
+          ]
+        }
+      ],
+      "artifact": {
+        "id": 10189826649,
+        "name": "closed-loop-v1-stream-contract-junit-34576480832-1",
+        "size_in_bytes": 716,
+        "digest": "sha256:cd615aeaa003a0953320695f0e3f417d062039d1f8534f6f1f094f2ad74325e5",
+        "created_at": "2026-09-11T07:53:23Z",
+        "expires_at": "2026-09-25T07:53:22Z",
+        "expired": false
+      },
+      "zip": "stream-contract-34576480832.zip",
+      "sha256_verified": true,
+      "xml": "stream-contract-34576480832.xml",
+      "xml_sha256": "6bf8336ec01593d3c2bb5638301e6389239675ffcba20ea0a32638d2c079bc35",
+      "junit": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "testcases": [
+        {
+          "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+          "name": "test_chat_stream_resilience_baseline_finishes_and_cleans_state"
+        },
+        {
+          "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+          "name": "test_chat_stream_resilience_midstream_exception_returns_error_and_cleans_state"
+        }
+      ],
+      "same_selection_as_local": true
+    },
+    {
+      "id": 34576477047,
+      "html_url": "https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576477047",
+      "name": "PR Smoke Gate",
+      "path": ".github/workflows/pr-smoke-gate.yml",
+      "head_branch": "codex/upstream-langfuse-sync",
+      "head_sha": "357a8a6f553882fd68ac9c951b0ae92422ccae1c",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "run_attempt": 1,
+      "created_at": "2026-09-11T07:53:01Z",
+      "updated_at": "2026-09-11T07:53:28Z",
+      "jobs": [
+        {
+          "id": 103189974623,
+          "name": "Smoke Blocking Gate",
+          "html_url": "https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576477047/job/103189974623",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-09-11T07:53:05Z",
+          "completed_at": "2026-09-11T07:53:27Z",
+          "runner_name": "GitHub Actions 1000000061",
+          "runner_labels": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:06Z",
+              "completed_at": "2026-09-11T07:53:07Z"
+            },
+            {
+              "name": "Checkout",
+              "number": 2,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:07Z",
+              "completed_at": "2026-09-11T07:53:11Z"
+            },
+            {
+              "name": "Setup Python 3.11",
+              "number": 3,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:11Z",
+              "completed_at": "2026-09-11T07:53:11Z"
+            },
+            {
+              "name": "Setup uv",
+              "number": 4,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:11Z",
+              "completed_at": "2026-09-11T07:53:13Z"
+            },
+            {
+              "name": "Install dependencies (project + test)",
+              "number": 5,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:13Z",
+              "completed_at": "2026-09-11T07:53:15Z"
+            },
+            {
+              "name": "Run smoke blocking tests",
+              "number": 6,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:15Z",
+              "completed_at": "2026-09-11T07:53:22Z"
+            },
+            {
+              "name": "Upload smoke JUnit artifact",
+              "number": 7,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:22Z",
+              "completed_at": "2026-09-11T07:53:23Z"
+            },
+            {
+              "name": "Post Setup uv",
+              "number": 12,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:23Z",
+              "completed_at": "2026-09-11T07:53:24Z"
+            },
+            {
+              "name": "Post Setup Python 3.11",
+              "number": 13,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:24Z",
+              "completed_at": "2026-09-11T07:53:24Z"
+            },
+            {
+              "name": "Post Checkout",
+              "number": 14,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:24Z",
+              "completed_at": "2026-09-11T07:53:24Z"
+            },
+            {
+              "name": "Complete job",
+              "number": 15,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-09-11T07:53:24Z",
+              "completed_at": "2026-09-11T07:53:24Z"
+            }
+          ]
+        }
+      ],
+      "artifact": {
+        "id": 10189827097,
+        "name": "closed-loop-v1-smoke-junit-34576477047-1",
+        "size_in_bytes": 391,
+        "digest": "sha256:635c363e5fe1f5a2f3938a778bba98880715ab01147db927c30081a3fa8eebca",
+        "created_at": "2026-09-11T07:53:23Z",
+        "expires_at": "2026-09-25T07:53:22Z",
+        "expired": false
+      },
+      "zip": "smoke-34576477047.zip",
+      "sha256_verified": true,
+      "xml": "smoke-34576477047.xml",
+      "xml_sha256": "ffb020e11819ab971ef8063c69054cc8522cc82f93ea75cad936a2e1111c2459",
+      "junit": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "testcases": [
+        {
+          "classname": "tests.smoke.test_api_smoke",
+          "name": "test_health_smoke"
+        },
+        {
+          "classname": "tests.smoke.test_api_smoke",
+          "name": "test_chat_non_stream_smoke"
+        },
+        {
+          "classname": "tests.smoke.test_api_smoke",
+          "name": "test_chat_stream_smoke_has_terminal_event"
+        }
+      ],
+      "same_selection_as_local": true
+    }
+  ],
+  "unmet_acceptance": [],
+  "executions": {
+    "smoke": {
+      "run_id": "P3-0-2026-09-10",
+      "selection": "smoke",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "python",
+        "-m",
+        "pytest",
+        "-p",
+        "pytest_asyncio.plugin",
+        "tests/smoke",
+        "-m",
+        "smoke and blocking",
+        "-q",
+        "--tb=short",
+        "--junitxml=F:\\Programme\\Agent\\NagaAgent-main\\tests\\artifacts\\final_plan\\p3-0-2026-09-10\\smoke.xml"
+      ],
+      "started_utc": "2026-09-10T08:36:10.521307+00:00",
+      "platform": "Windows-10-10.0.22000-SP0",
+      "python": "3.11.7 (tags/v3.11.7:fa7a6f2, Dec  4 2023, 19:24:49) [MSC v.1937 64 bit (AMD64)]",
+      "controls": {
+        "NAGA_ENABLE_REAL_LLM_TESTS": "0",
+        "NAGA_ENABLE_LANGFUSE_LAN_TESTS": "0",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "branch": "codex/upstream-langfuse-sync",
+      "revision": "357a8a6f553882fd68ac9c951b0ae92422ccae1c",
+      "tracked_changes": [
+        " M docs/testing/plans/nagaagent-final-testing-plan.md"
+      ],
+      "exit_code": 0,
+      "seconds": 11.67,
+      "artifacts": {
+        "smoke.log": {
+          "path": "tests/artifacts/final_plan/p3-0-2026-09-10/smoke.log",
+          "sha256": "bfa6edc1e3459409a15201d1f925362451384ec548ef1b365455e0e91bae6e70"
+        },
+        "smoke.xml": {
+          "path": "tests/artifacts/final_plan/p3-0-2026-09-10/smoke.xml",
+          "sha256": "7bb28b9e1a753316f4f533ca0d2b6a3b14bec757b17d03a4d4b657b082c1a8d9"
+        }
+      },
+      "junit": {
+        "tests": 3,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "pytest_seconds": 8.298,
+        "testcases": [
+          {
+            "classname": "tests.smoke.test_api_smoke",
+            "name": "test_health_smoke",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.smoke.test_api_smoke",
+            "name": "test_chat_non_stream_smoke",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.smoke.test_api_smoke",
+            "name": "test_chat_stream_smoke_has_terminal_event",
+            "outcome": "passed"
+          }
+        ],
+        "testcase_elements": 3,
+        "extra_suite_count_from_subtests": 0
+      }
+    },
+    "stream": {
+      "run_id": "P3-0-2026-09-10",
+      "selection": "stream",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "python",
+        "-m",
+        "pytest",
+        "-p",
+        "pytest_asyncio.plugin",
+        "tests/integration/chat_stream/test_resilience.py",
+        "-m",
+        "integration and blocking and not real_llm",
+        "-q",
+        "--tb=short",
+        "--junitxml=F:\\Programme\\Agent\\NagaAgent-main\\tests\\artifacts\\final_plan\\p3-0-2026-09-10\\stream.xml"
+      ],
+      "started_utc": "2026-09-10T08:36:20.482730+00:00",
+      "platform": "Windows-10-10.0.22000-SP0",
+      "python": "3.11.7 (tags/v3.11.7:fa7a6f2, Dec  4 2023, 19:24:49) [MSC v.1937 64 bit (AMD64)]",
+      "controls": {
+        "NAGA_ENABLE_REAL_LLM_TESTS": "0",
+        "NAGA_ENABLE_LANGFUSE_LAN_TESTS": "0",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "branch": "codex/upstream-langfuse-sync",
+      "revision": "357a8a6f553882fd68ac9c951b0ae92422ccae1c",
+      "tracked_changes": [
+        " M docs/testing/plans/nagaagent-final-testing-plan.md"
+      ],
+      "exit_code": 0,
+      "seconds": 9.08,
+      "artifacts": {
+        "stream.log": {
+          "path": "tests/artifacts/final_plan/p3-0-2026-09-10/stream.log",
+          "sha256": "675f726fe2455f1e1d65800ae88b37748764e987839f6bece97eced33fcfd37e"
+        },
+        "stream.xml": {
+          "path": "tests/artifacts/final_plan/p3-0-2026-09-10/stream.xml",
+          "sha256": "93b55b8117e3af18bafeaf7afc051e74a778ec296277d6fa300bced861300739"
+        }
+      },
+      "junit": {
+        "tests": 2,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "pytest_seconds": 6.66,
+        "testcases": [
+          {
+            "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+            "name": "test_chat_stream_resilience_baseline_finishes_and_cleans_state",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+            "name": "test_chat_stream_resilience_midstream_exception_returns_error_and_cleans_state",
+            "outcome": "passed"
+          }
+        ],
+        "testcase_elements": 2,
+        "extra_suite_count_from_subtests": 0
+      }
+    },
+    "full": {
+      "run_id": "P3-0-2026-09-10",
+      "selection": "full",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "python",
+        "-m",
+        "pytest",
+        "-p",
+        "pytest_asyncio.plugin",
+        "tests",
+        "-q",
+        "--tb=short",
+        "--junitxml=F:\\Programme\\Agent\\NagaAgent-main\\tests\\artifacts\\final_plan\\p3-0-2026-09-10\\full.xml"
+      ],
+      "started_utc": "2026-09-10T08:36:58.579042+00:00",
+      "platform": "Windows-10-10.0.22000-SP0",
+      "python": "3.11.7 (tags/v3.11.7:fa7a6f2, Dec  4 2023, 19:24:49) [MSC v.1937 64 bit (AMD64)]",
+      "controls": {
+        "NAGA_ENABLE_REAL_LLM_TESTS": "0",
+        "NAGA_ENABLE_LANGFUSE_LAN_TESTS": "0",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "branch": "codex/upstream-langfuse-sync",
+      "revision": "357a8a6f553882fd68ac9c951b0ae92422ccae1c",
+      "tracked_changes": [
+        " M docs/testing/plans/nagaagent-final-testing-plan.md"
+      ],
+      "exit_code": 0,
+      "seconds": 125.24,
+      "artifacts": {
+        "full.log": {
+          "path": "tests/artifacts/final_plan/p3-0-2026-09-10/full.log",
+          "sha256": "7c46eb4e43d4e8fcef87d9d36d676b3683c17109666eded8790bfad9ed372190"
+        },
+        "full.xml": {
+          "path": "tests/artifacts/final_plan/p3-0-2026-09-10/full.xml",
+          "sha256": "3e94c8831a1c6d605fb174e0ea61a36e71d039c8678881522c3a9bbd0e00ccff"
+        }
+      },
+      "junit": {
+        "tests": 205,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 4,
+        "pytest_seconds": 122.604,
+        "testcases": [
+          {
+            "classname": "tests.golden_cases.test_agent_workflow_golden_cases",
+            "name": "test_agent_workflow_golden_case_stub_profile[gc_history_continue_001]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.golden_cases.test_agent_workflow_golden_cases",
+            "name": "test_agent_workflow_golden_case_stub_profile[gc_multi_tool_search_fetch_001]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.golden_cases.test_agent_workflow_golden_cases",
+            "name": "test_agent_workflow_golden_case_stub_profile[gc_no_tool_answer_001]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.golden_cases.test_agent_workflow_golden_cases",
+            "name": "test_agent_workflow_golden_case_stub_profile[gc_tool_timeout_fallback_001]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.golden_cases.test_agent_workflow_golden_cases",
+            "name": "test_agent_workflow_golden_case_stub_profile[gc_tool_web_search_001]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.integration.chat_stream.test_real_llm_smoke",
+            "name": "test_chat_stream_real_llm_normal_smoke",
+            "outcome": "skipped",
+            "skip_type": "pytest.skip",
+            "skip_reason": "requires opt-in and working real LLM credentials/config"
+          },
+          {
+            "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+            "name": "test_chat_stream_resilience_baseline_finishes_and_cleans_state",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+            "name": "test_chat_stream_resilience_midstream_exception_returns_error_and_cleans_state",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+            "name": "test_chat_stream_resilience_tool_error_event_still_terminates",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+            "name": "test_chat_stream_resilience_notify_failure_does_not_block_finalization",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+            "name": "test_chat_stream_resilience_empty_output_still_finalizes",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+            "name": "test_chat_stream_user_stop_contract_gap",
+            "outcome": "skipped",
+            "skip_type": "pytest.xfail",
+            "skip_reason": "runtime has no explicit user-stop contract yet; keep this as an executable gap"
+          },
+          {
+            "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithRealLoopAndFakeLLM",
+            "name": "test_chat_stream_real_loop_with_fake_llm_finishes_and_cleans_state",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithRealLoopAndFakeLLM",
+            "name": "test_chat_stream_resilience_compress_failure_does_not_break_stream",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.integration.observability.test_langfuse_chat_wiring",
+            "name": "test_routes_real_sdk_retry_tool_tree",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.integration.observability.test_langfuse_chat_wiring",
+            "name": "test_lan_synthetic_upload_and_readback",
+            "outcome": "skipped",
+            "skip_type": "pytest.skip",
+            "skip_reason": "Synthetic LAN Langfuse upload/readback is opt-in"
+          },
+          {
+            "classname": "tests.smoke.test_api_smoke",
+            "name": "test_health_smoke",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.smoke.test_api_smoke",
+            "name": "test_chat_non_stream_smoke",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.smoke.test_api_smoke",
+            "name": "test_chat_stream_smoke_has_terminal_event",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_api_server_lightweight_smoke_routes",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_auth_qq_email_get_maps_upstream_response_and_errors",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_auth_routes_restore_header_token_and_bind_qq_email",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_bootstrap_config_from_project_example",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_build_tool_result_blocks_for_mcp_callback",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_config_manager_updates_effective_local_config",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_config_path_falls_back_to_user_data_when_local_config_missing",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_config_path_prefers_local_config_over_user_data",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_fastapi_routes_do_not_shadow_duplicates",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_format_tool_result_for_display_unwraps_common_json_payload",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_local_file_tools_execute_against_temp_workspace",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_openai_proxy_rejects_default_placeholder_api_when_gateway_disabled",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_openai_proxy_rejects_placeholder_api_on_custom_base_url",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_openai_proxy_uses_local_api_when_gateway_disabled",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_openclaw_bridge_creates_and_injects_runtime_config",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_openclaw_config_normalizes_hooks_path_and_uses_hooks_token",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_queue_push_direct_and_active_conversation_paths",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_sanitize_system_config_payload_keeps_user_live2d_source",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_sanitize_system_config_payload_preserves_existing_real_api_key",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_sanitize_system_config_payload_removes_127001_and_naga_char_dynamic_sources",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_sanitize_system_config_payload_removes_dynamic_live2d_source_without_mutating_input",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_should_use_model_gateway_respects_config",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_skill_delete_and_read_reject_path_traversal_names",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_skill_write_rejects_path_traversal_names",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_sync_source_config_skips_when_local_config_is_effective",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_system_config_route_does_not_overwrite_real_api_key_with_placeholder",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_system_config_route_normalizes_legacy_service_keys",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_system_config_route_sanitizes_dynamic_live2d_source",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_tool_notification_and_ui_polling_routes",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_travel_browser_settings_route_persists_and_syncs_agent_visibility",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.ConfigAndToolTests",
+            "name": "test_voice_realtime_import_does_not_require_qwen_optional_dependency",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.McpFuncNameSanitizeTests",
+            "name": "test_convert_native_to_dispatch_falls_back_to_split",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.McpFuncNameSanitizeTests",
+            "name": "test_convert_native_to_dispatch_restores_original_names",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.McpFuncNameSanitizeTests",
+            "name": "test_distinct_inputs_produce_distinct_names",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.McpFuncNameSanitizeTests",
+            "name": "test_invalidate_keeps_mapping",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.McpFuncNameSanitizeTests",
+            "name": "test_llm_message_preparation_replays_reasoning_only_for_deepseek_tool_calls",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.McpFuncNameSanitizeTests",
+            "name": "test_make_func_name_is_deterministic",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.McpFuncNameSanitizeTests",
+            "name": "test_make_func_name_is_openai_compliant_and_roundtrips",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.McpFuncNameSanitizeTests",
+            "name": "test_native_assistant_message_keeps_reasoning_for_tool_history",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.McpFuncNameSanitizeTests",
+            "name": "test_pure_ascii_keeps_legacy_naming",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.McpFuncNameSanitizeTests",
+            "name": "test_resolve_unknown_returns_none",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_config_and_tools.McpFuncNameSanitizeTests",
+            "name": "test_stream_chat_returns_visible_error_after_empty_stream_retries",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_live2d_assets.Live2DAssetsTest",
+            "name": "test_create_and_delete_custom_live2d_model",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_live2d_assets.Live2DAssetsTest",
+            "name": "test_find_live2d_model_path_requires_single_model_file",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_live2d_assets.Live2DAssetsTest",
+            "name": "test_normalize_live2d_upload_path_rejects_traversal",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_updates_and_tts.UpdateRouteTests",
+            "name": "test_github_release_payload_selects_platform_installer",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_updates_and_tts.UpdateRouteTests",
+            "name": "test_saved_config_cannot_override_runtime_version",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_updates_and_tts.UpdateRouteTests",
+            "name": "test_update_route_falls_back_to_business",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_updates_and_tts.UpdateRouteTests",
+            "name": "test_update_route_prefers_github",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_updates_and_tts.UpdateRouteTests",
+            "name": "test_update_route_reports_failure_when_all_sources_fail",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_updates_and_tts.TtsAudioFormatTests",
+            "name": "test_declared_mp3_content_type_is_preserved",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_updates_and_tts.TtsAudioFormatTests",
+            "name": "test_gateway_proxy_refreshes_expired_token_and_returns_new_token",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_updates_and_tts.TtsAudioFormatTests",
+            "name": "test_gateway_proxy_uses_active_character_voice",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_updates_and_tts.TtsAudioFormatTests",
+            "name": "test_local_proxy_uses_config_defaults_and_api_key",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_updates_and_tts.TtsAudioFormatTests",
+            "name": "test_mp3_frame_without_id3_is_not_wrapped_as_pcm",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.test_updates_and_tts.TtsAudioFormatTests",
+            "name": "test_raw_pcm_is_wrapped_as_wav",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_context_compression",
+            "name": "test_loop_forwards_compress_events_and_uses_compressed_messages",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_context_compression",
+            "name": "test_loop_summary_round_runs_its_own_compression_pass",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_convergence",
+            "name": "test_loop_stops_when_no_actionable_tool_calls",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_convergence",
+            "name": "test_loop_repeated_all_failed_rounds_trigger_early_summary",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_convergence",
+            "name": "test_loop_max_rounds_exhausted_enters_summary_with_tools_disabled",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_convergence",
+            "name": "test_loop_tool_timeout_errors_still_converge_to_summary",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_failure_attribution",
+            "name": "test_loop_failure_attribution_success_contract",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_failure_attribution",
+            "name": "test_loop_failure_attribution_dispatch_error_contract",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_failure_attribution",
+            "name": "test_loop_failure_attribution_summary_round_contract",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_failure_attribution",
+            "name": "test_loop_failure_attribution_accepts_loop_stage_overrides[tool_call_normalize]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_failure_attribution",
+            "name": "test_loop_failure_attribution_accepts_loop_stage_overrides[tool_result_injection]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_message_injection",
+            "name": "test_native_result_injection_is_single_and_stable",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_message_injection",
+            "name": "test_queue_injection_happens_before_next_round_and_once",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_message_injection",
+            "name": "test_multi_round_native_result_injection_stays_idempotent",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_message_injection",
+            "name": "test_duplicate_tool_call_id_is_deduplicated_across_rounds",
+            "outcome": "skipped",
+            "skip_type": "pytest.xfail",
+            "skip_reason": "runtime does not deduplicate duplicate tool_call_id injections across rounds yet"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_tool_dispatch",
+            "name": "test_execute_tool_calls_empty_list_returns_empty",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_tool_dispatch",
+            "name": "test_execute_tool_calls_normalizes_raised_exceptions",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_tool_dispatch",
+            "name": "test_execute_tool_calls_preserves_executor_returned_timeout_error",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_tool_dispatch",
+            "name": "test_native_and_text_paths_share_dispatch_contract",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.agentic_tool_loop.test_loop_tool_dispatch",
+            "name": "test_execute_tool_calls_dispatches_all_supported_agent_types",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.p2_api.test_failure_attribution",
+            "name": "test_failure_attribution_success_shape_and_defaults",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.p2_api.test_failure_attribution",
+            "name": "test_failure_attribution_degraded_from_error_event",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.p2_api.test_failure_attribution",
+            "name": "test_failure_attribution_failed_when_finalize_not_cleaned",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.p2_api.test_failure_attribution",
+            "name": "test_failure_attribution_accepts_explicit_stage_overrides[llm_output_parse]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.p2_api.test_failure_attribution",
+            "name": "test_failure_attribution_accepts_explicit_stage_overrides[tool_result_injection]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.p2_api.test_failure_attribution",
+            "name": "test_failure_attribution_accepts_explicit_stage_overrides[context_assembly]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.p2_api.test_failure_attribution",
+            "name": "test_failure_attribution_accepts_explicit_stage_overrides[summary_round]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_runner",
+            "name": "test_stub_runner_executes_no_tool_case",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_runner",
+            "name": "test_stub_runner_executes_multi_tool_case",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_runner",
+            "name": "test_stub_runner_maps_tool_timeout_to_degraded_report",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_runner",
+            "name": "test_assertion_checker_accepts_repository_stub_cases",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_runner",
+            "name": "test_assertion_checker_reports_multiple_contract_failures",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_schema",
+            "name": "test_golden_case_schema_accepts_minimal_stub_case",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_schema",
+            "name": "test_golden_case_schema_rejects_missing_required_text",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_schema",
+            "name": "test_golden_case_schema_rejects_unknown_profile",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_schema",
+            "name": "test_golden_case_schema_rejects_invalid_expected_contract",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_schema",
+            "name": "test_discover_golden_case_files_returns_stable_supported_files",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_schema",
+            "name": "test_load_golden_cases_reads_json_case",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_schema",
+            "name": "test_load_golden_cases_rejects_duplicate_case_ids",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_schema",
+            "name": "test_load_golden_cases_reports_missing_required_field",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_golden_case_schema",
+            "name": "test_load_repository_minimal_golden_case_files",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_llm_generation_helpers_record_output_usage_and_metadata",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_stream_generation_helpers_record_tools_and_output",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_tool_observation_helpers_build_expected_name_and_status",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_telemetry_context_failures_do_not_change_body_result[None-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_telemetry_context_failures_do_not_change_body_result[None-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_telemetry_context_failures_do_not_change_body_result[create-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_telemetry_context_failures_do_not_change_body_result[create-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_telemetry_context_failures_do_not_change_body_result[enter-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_telemetry_context_failures_do_not_change_body_result[enter-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_telemetry_context_failures_do_not_change_body_result[exit-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_telemetry_context_failures_do_not_change_body_result[exit-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[ValueError-None-False-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[ValueError-None-False-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[ValueError-None-True-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[ValueError-None-True-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[ValueError-exit-False-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[ValueError-exit-False-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[ValueError-enter-False-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[ValueError-enter-False-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[CancelledError-None-False-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[CancelledError-None-False-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[CancelledError-None-True-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[CancelledError-None-True-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[CancelledError-exit-False-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[CancelledError-exit-False-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[CancelledError-enter-False-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[CancelledError-enter-False-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[GeneratorExit-None-False-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[GeneratorExit-None-False-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[GeneratorExit-None-True-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[GeneratorExit-None-True-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[GeneratorExit-exit-False-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[GeneratorExit-exit-False-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[GeneratorExit-enter-False-observation]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_original_body_exception_survives_sdk_cleanup[GeneratorExit-enter-False-attributes]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_incomplete_configuration_is_disabled[LANGFUSE_PUBLIC_KEY]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_incomplete_configuration_is_disabled[LANGFUSE_SECRET_KEY]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_incomplete_configuration_is_disabled[LANGFUSE_BASE_URL]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_client_initialization_is_cached_on_success_and_failure[False]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_client_initialization_is_cached_on_success_and_failure[True]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_missing_sdk_is_optional",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_dotenv_is_loaded_once_without_overriding_process_env",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_dotenv_loader_failure_is_optional",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_attribute_whitelist_and_empty_noop",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_payload_is_bounded_without_mutating_original",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_update_failure_does_not_escape",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_error_recording_keeps_original_exception",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_tool_name_fallbacks[call0-tool.weather.today]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_tool_name_fallbacks[call1-tool.mcp.today]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_tool_name_fallbacks[call2-tool.mcp]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_tool_name_fallbacks[call3-tool.tool]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_tool_success_is_not_marked_error",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_usage_absent_and_partial",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_cleanup_does_not_initialize_an_unused_sdk",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_shutdown_cleans_up_once_even_when_flush_fails[None]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_shutdown_cleans_up_once_even_when_flush_fails[flush]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_shutdown_cleans_up_once_even_when_flush_fails[shutdown]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_integration",
+            "name": "test_flush_uses_existing_client_without_closing_it",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_runtime",
+            "name": "test_sdk_root_session_parentage_and_default_no_content",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_runtime",
+            "name": "test_interleaved_streams_do_not_leak_context_at_yield",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_runtime",
+            "name": "test_stream_usage_only_chunk_and_explicit_close",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_runtime",
+            "name": "test_early_close_or_cancel_ends_generation_and_root[False]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_runtime",
+            "name": "test_early_close_or_cancel_ends_generation_and_root[True]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_runtime",
+            "name": "test_real_dispatch_keeps_parallel_tools_siblings_and_failures",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_runtime",
+            "name": "test_tracing_failures_preserve_values_and_original_exception",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_runtime",
+            "name": "test_payload_policy_redacts_before_bounding",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_langfuse_runtime",
+            "name": "test_shutdown_wait_is_bounded_off_loop_and_once",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_offline_bootstrap",
+            "name": "test_offline_bootstrap_isolates_home_config_and_dotenv",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_offline_bootstrap",
+            "name": "test_offline_bootstrap_blocks_and_records_connections[connect]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_offline_bootstrap",
+            "name": "test_offline_bootstrap_blocks_and_records_connections[connect_ex]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_offline_bootstrap",
+            "name": "test_offline_bootstrap_blocks_and_records_connections[create_connection]",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_offline_bootstrap",
+            "name": "test_offline_bootstrap_allows_asyncio_private_socketpair",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_quality_gate_summary",
+            "name": "test_quality_gate_blocking_correctness_failure_is_fail",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_quality_gate_summary",
+            "name": "test_quality_gate_blocking_stability_failure_is_fail",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_quality_gate_summary",
+            "name": "test_quality_gate_performance_small_regression_is_warn",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_quality_gate_summary",
+            "name": "test_quality_gate_no_regression_is_pass",
+            "outcome": "passed"
+          },
+          {
+            "classname": "tests.unit.test_quality_gate_summary",
+            "name": "test_quality_gate_bootstrap_writes_missing_baseline",
+            "outcome": "passed"
+          }
+        ],
+        "testcase_elements": 193,
+        "extra_suite_count_from_subtests": 12
+      },
+      "console_summary": {
+        "passed": 189,
+        "skipped": 2,
+        "xfailed": 2,
+        "subtests_passed": 12,
+        "note": "JUnit suite.tests=205 counts 12 subtests; there are 193 testcase elements. skipped=4 includes both executable xfails."
+      }
+    }
+  },
+  "source_files": [
+    {
+      "path": "apiserver/langfuse_runtime.py",
+      "sha256": "5a53375c0349fbcf9cebe125fc7391de5c66d66627cfd9cbd3b15d2fb5813ace",
+      "git_blob": "9055d81d7c700c4131ad909542e79f5e586e8ef5"
+    },
+    {
+      "path": "apiserver/langfuse_integration.py",
+      "sha256": "e904ffbfbd10598c8b132ca0d8e74e0334b41e1134b6ca55a176ce0a88ecf6a0",
+      "git_blob": "9ae0a527e66655cedd67ccd74651abeaf30e53ee"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "271855096c3c7f2f42597d5cbcdf2574474584cae71009e2f6242561936859c7",
+      "git_blob": "3fddd85f06d2119f99d0f5aa59a7412e2128d10f"
+    },
+    {
+      "path": "tests/support/offline_bootstrap.py",
+      "sha256": "045e2c61ac5a4e6a646b58e28b3a5adf32b8e57ea3ac9a4e8949dd833bfe7129",
+      "git_blob": "8f9ea2086ad82c4eed6337a409b51a049142893f"
+    },
+    {
+      "path": "tests/integration/chat_stream/test_resilience.py",
+      "sha256": "9910c5a192b07775ff2d362a00ddc441cee62abe31040e78a6f153504af4a330",
+      "git_blob": "ec0830fb8e6937b56a1d848d6c158ec875c1d260"
+    },
+    {
+      "path": ".github/workflows/pr-smoke-gate.yml",
+      "sha256": "50c9eadd25c2641afc06bbb58f4e640c4ac6a4a6eb1591d7397703373341131e",
+      "git_blob": "df1c7c0330c38d3361503c35282040390c8a4424"
+    },
+    {
+      "path": ".github/workflows/pr-stream-contract-gate.yml",
+      "sha256": "25d94078abd6b50c5aec3e4d25ac5da96d828bec370c73ece23ebc94bbb0d4d3",
+      "git_blob": "a0ab92cfb6e5ea34f7044646794ce34d64a92290"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "f22840744a039636f47eb8c40dbd2ee69467ae198b4a5096cfd7e2d193be0aac",
+      "git_blob": "4ed95816afbd99f82b1e395feab3c0d15fbb5e43"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "7c38809299de78ea7025d6195d8accee29cbf736c7fa0e5c40b1e47c7356ab63",
+      "git_blob": "9f613df7d200895cfcf0c48ab748d604a2d412d2"
+    }
+  ],
+  "tracked_runtime_test_ci_changes": "",
+  "fixture_provenance": {
+    "landed_in": "981821be7b971c4123c8f41d7a77f176970cd872",
+    "matches_restored_c0_content": true,
+    "c0_branch_is_ancestor": false
+  },
+  "github-inventory": {
+    "path": "tests/artifacts/final_plan/p3-0-2026-09-10/github-inventory.json",
+    "sha256": "2c59d1e2dbee3b46c9d632e6e29d46e26fc2d379f96052cc179ebee770d37f5e"
+  },
+  "github-auth-readonly": {
+    "path": "tests/artifacts/final_plan/p3-0-2026-09-10/github-auth-readonly.json",
+    "sha256": "d5b79c92222908c4c8e2d276f84bd4a222d7e17c3346bb043b57b01c173d11b7"
+  },
+  "test-inventory": {
+    "path": "tests/artifacts/final_plan/p3-0-2026-09-10/test-inventory.json",
+    "sha256": "b825a62236c897a8d11d745c25148ca974d764968da55ba730a01d4c6f6d9c52"
+  },
+  "github_observed_state": {
+    "checked_utc": "2026-09-10T08:36:29.793055+00:00",
+    "authenticated": false,
+    "tsukiyomu/NaGaAgent_Testing": {
+      "http": 200,
+      "full_name": "tsukiyomu/NaGaAgent_Testing",
+      "default_branch": "main",
+      "fork": false,
+      "archived": false,
+      "pushed_at": "2026-04-24T08:13:10Z",
+      "parent": null,
+      "source": null,
+      "branches_http": 200,
+      "branches": [
+        {
+          "name": "main",
+          "sha": "3be0a4c82b4673acc2ed2dbbfe0d88f323b461f8"
+        }
+      ]
+    },
+    "tsukiyomu/NagaAgent-main": {
+      "http": 200,
+      "full_name": "tsukiyomu/NagaAgent-main",
+      "default_branch": "main",
+      "fork": false,
+      "archived": false,
+      "pushed_at": "2026-08-31T12:38:37Z",
+      "parent": null,
+      "source": null,
+      "branches_http": 200,
+      "branches": [
+        {
+          "name": "codex/c0-4-intentional-red",
+          "sha": "d6553a96f6987c5f58fdafddb99fc28e19c72eb0"
+        },
+        {
+          "name": "codex/verify-stream-contract-gate",
+          "sha": "56da96e3136da7e82d0f86fa83eeae2da698329d"
+        },
+        {
+          "name": "main",
+          "sha": "533d4a3e464c6ce13b719145ce400099e6dcf32d"
+        }
+      ]
+    },
+    "RTGS2017/NagaAgent": {
+      "http": 200,
+      "full_name": "RTGS2017/NagaAgent",
+      "default_branch": "main",
+      "fork": false,
+      "archived": false,
+      "pushed_at": "2026-08-11T07:55:16Z",
+      "parent": null,
+      "source": null,
+      "branches_http": 200,
+      "branches": [
+        {
+          "name": "bugfix/openclaw_timeout_fix",
+          "sha": "b820a04a925897b9b3c3f33fa2103e1107174328"
+        },
+        {
+          "name": "bugfix/timeout",
+          "sha": "66fdec962b6ec840842dbebec5f5dee2e90b866d"
+        },
+        {
+          "name": "feat/system-prompt-api",
+          "sha": "d93cbfbc13ffdd645bc106a4b4dfe46337217994"
+        },
+        {
+          "name": "fix/issues-311-273",
+          "sha": "ea577430274e25a95b6406f55b1d9d6a57653606"
+        },
+        {
+          "name": "fix/local-model-proxy",
+          "sha": "f82443f55d0d6c721905b1ef2ccc6033a0b1574a"
+        },
+        {
+          "name": "fix/openclaw-frontend-polling",
+          "sha": "f7a3914b5e8ff5c9e1389c81acd165ffac61eaa1"
+        },
+        {
+          "name": "fix/openclaw-multi-replies",
+          "sha": "a4783a0e535bef5bd22bb2ed96a62ef8c4bee503"
+        },
+        {
+          "name": "main",
+          "sha": "c2caa9079b9eb48129f550c43a5485231d404d3b"
+        }
+      ]
+    },
+    "old_pr_2": {
+      "http": 200,
+      "html_url": "https://github.com/tsukiyomu/NagaAgent-main/pull/2",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "closed_at": null,
+      "merged_at": null,
+      "head": {
+        "ref": "codex/c0-4-intentional-red",
+        "sha": "d6553a96f6987c5f58fdafddb99fc28e19c72eb0"
+      },
+      "base": {
+        "ref": "main",
+        "sha": "533d4a3e464c6ce13b719145ce400099e6dcf32d"
+      }
+    }
+  },
+  "github_observed_state_scope": "Historical read-only snapshot on 2026-09-10; current Owner disposition and CI state are in remote_evidence and owner_pr2_decision.",
+  "known_langfuse_risks": {
+    "evidence": {
+      "path": "tests/artifacts/upstream_migration/mig-5/review-boundary-probes-2026-09-08.json",
+      "sha256": "394e61d018e15d6b4c3388912885b45045bb7833822a16e5e2b2645b03850083"
+    },
+    "source_revision_unchanged": true,
+    "observation_date": "2026-09-08",
+    "reexecuted_in_p3_0": false,
+    "items": [
+      "content_clean resets earlier round output",
+      "root ends before deferred inner generator cleanup",
+      "password in JSON string is not redacted"
+    ],
+    "fixed_in_p3_0": false
+  },
+  "phase_history": [
+    {
+      "run_id": "P3-0-2026-09-10",
+      "status": "REVIEW_NEEDED",
+      "outcome": "Local baseline verified; Owner repository and PR disposition plus remote CI evidence pending"
+    },
+    {
+      "run_id": "P3-0-2026-09-11",
+      "status": "DONE",
+      "outcome": "Owner selected tsukiyomu/NagaAgent-main; PR #2 closed without merge; same-revision Smoke and Stream runs and downloaded JUnit verified"
+    }
+  ],
+  "remote_evidence": {
+    "checked_utc": "2026-09-11T07:53:56.203020+00:00",
+    "repository": "tsukiyomu/NagaAgent-main",
+    "branch": "codex/upstream-langfuse-sync",
+    "revision": "357a8a6f553882fd68ac9c951b0ae92422ccae1c",
+    "trigger": "workflow_dispatch",
+    "runs": [
+      {
+        "id": 34576480832,
+        "html_url": "https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576480832",
+        "name": "PR Stream Contract Gate",
+        "path": ".github/workflows/pr-stream-contract-gate.yml",
+        "head_branch": "codex/upstream-langfuse-sync",
+        "head_sha": "357a8a6f553882fd68ac9c951b0ae92422ccae1c",
+        "event": "workflow_dispatch",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "created_at": "2026-09-11T07:53:04Z",
+        "updated_at": "2026-09-11T07:53:26Z",
+        "jobs": [
+          {
+            "id": 103189985834,
+            "name": "Stream Contract Gate",
+            "html_url": "https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576480832/job/103189985834",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-09-11T07:53:07Z",
+            "completed_at": "2026-09-11T07:53:25Z",
+            "runner_name": "GitHub Actions 1000000062",
+            "runner_labels": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "number": 1,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:07Z",
+                "completed_at": "2026-09-11T07:53:08Z"
+              },
+              {
+                "name": "Checkout",
+                "number": 2,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:08Z",
+                "completed_at": "2026-09-11T07:53:11Z"
+              },
+              {
+                "name": "Setup Python 3.11",
+                "number": 3,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:11Z",
+                "completed_at": "2026-09-11T07:53:12Z"
+              },
+              {
+                "name": "Setup uv",
+                "number": 4,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:12Z",
+                "completed_at": "2026-09-11T07:53:13Z"
+              },
+              {
+                "name": "Install dependencies (project + test)",
+                "number": 5,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:13Z",
+                "completed_at": "2026-09-11T07:53:16Z"
+              },
+              {
+                "name": "Run stream contract blocking tests",
+                "number": 6,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:16Z",
+                "completed_at": "2026-09-11T07:53:22Z"
+              },
+              {
+                "name": "Upload stream contract JUnit artifact",
+                "number": 7,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:22Z",
+                "completed_at": "2026-09-11T07:53:23Z"
+              },
+              {
+                "name": "Post Setup uv",
+                "number": 12,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:23Z",
+                "completed_at": "2026-09-11T07:53:23Z"
+              },
+              {
+                "name": "Post Setup Python 3.11",
+                "number": 13,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:23Z",
+                "completed_at": "2026-09-11T07:53:23Z"
+              },
+              {
+                "name": "Post Checkout",
+                "number": 14,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:23Z",
+                "completed_at": "2026-09-11T07:53:23Z"
+              },
+              {
+                "name": "Complete job",
+                "number": 15,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:23Z",
+                "completed_at": "2026-09-11T07:53:23Z"
+              }
+            ]
+          }
+        ],
+        "artifact": {
+          "id": 10189826649,
+          "name": "closed-loop-v1-stream-contract-junit-34576480832-1",
+          "size_in_bytes": 716,
+          "digest": "sha256:cd615aeaa003a0953320695f0e3f417d062039d1f8534f6f1f094f2ad74325e5",
+          "created_at": "2026-09-11T07:53:23Z",
+          "expires_at": "2026-09-25T07:53:22Z",
+          "expired": false
+        },
+        "zip": "stream-contract-34576480832.zip",
+        "sha256_verified": true,
+        "xml": "stream-contract-34576480832.xml",
+        "xml_sha256": "6bf8336ec01593d3c2bb5638301e6389239675ffcba20ea0a32638d2c079bc35",
+        "junit": {
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "testcases": [
+          {
+            "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+            "name": "test_chat_stream_resilience_baseline_finishes_and_cleans_state"
+          },
+          {
+            "classname": "tests.integration.chat_stream.test_resilience.TestChatStreamRouteWithFakeLoop",
+            "name": "test_chat_stream_resilience_midstream_exception_returns_error_and_cleans_state"
+          }
+        ],
+        "same_selection_as_local": true
+      },
+      {
+        "id": 34576477047,
+        "html_url": "https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576477047",
+        "name": "PR Smoke Gate",
+        "path": ".github/workflows/pr-smoke-gate.yml",
+        "head_branch": "codex/upstream-langfuse-sync",
+        "head_sha": "357a8a6f553882fd68ac9c951b0ae92422ccae1c",
+        "event": "workflow_dispatch",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "created_at": "2026-09-11T07:53:01Z",
+        "updated_at": "2026-09-11T07:53:28Z",
+        "jobs": [
+          {
+            "id": 103189974623,
+            "name": "Smoke Blocking Gate",
+            "html_url": "https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576477047/job/103189974623",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-09-11T07:53:05Z",
+            "completed_at": "2026-09-11T07:53:27Z",
+            "runner_name": "GitHub Actions 1000000061",
+            "runner_labels": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "number": 1,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:06Z",
+                "completed_at": "2026-09-11T07:53:07Z"
+              },
+              {
+                "name": "Checkout",
+                "number": 2,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:07Z",
+                "completed_at": "2026-09-11T07:53:11Z"
+              },
+              {
+                "name": "Setup Python 3.11",
+                "number": 3,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:11Z",
+                "completed_at": "2026-09-11T07:53:11Z"
+              },
+              {
+                "name": "Setup uv",
+                "number": 4,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:11Z",
+                "completed_at": "2026-09-11T07:53:13Z"
+              },
+              {
+                "name": "Install dependencies (project + test)",
+                "number": 5,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:13Z",
+                "completed_at": "2026-09-11T07:53:15Z"
+              },
+              {
+                "name": "Run smoke blocking tests",
+                "number": 6,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:15Z",
+                "completed_at": "2026-09-11T07:53:22Z"
+              },
+              {
+                "name": "Upload smoke JUnit artifact",
+                "number": 7,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:22Z",
+                "completed_at": "2026-09-11T07:53:23Z"
+              },
+              {
+                "name": "Post Setup uv",
+                "number": 12,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:23Z",
+                "completed_at": "2026-09-11T07:53:24Z"
+              },
+              {
+                "name": "Post Setup Python 3.11",
+                "number": 13,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:24Z",
+                "completed_at": "2026-09-11T07:53:24Z"
+              },
+              {
+                "name": "Post Checkout",
+                "number": 14,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:24Z",
+                "completed_at": "2026-09-11T07:53:24Z"
+              },
+              {
+                "name": "Complete job",
+                "number": 15,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-09-11T07:53:24Z",
+                "completed_at": "2026-09-11T07:53:24Z"
+              }
+            ]
+          }
+        ],
+        "artifact": {
+          "id": 10189827097,
+          "name": "closed-loop-v1-smoke-junit-34576477047-1",
+          "size_in_bytes": 391,
+          "digest": "sha256:635c363e5fe1f5a2f3938a778bba98880715ab01147db927c30081a3fa8eebca",
+          "created_at": "2026-09-11T07:53:23Z",
+          "expires_at": "2026-09-25T07:53:22Z",
+          "expired": false
+        },
+        "zip": "smoke-34576477047.zip",
+        "sha256_verified": true,
+        "xml": "smoke-34576477047.xml",
+        "xml_sha256": "ffb020e11819ab971ef8063c69054cc8522cc82f93ea75cad936a2e1111c2459",
+        "junit": {
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "testcases": [
+          {
+            "classname": "tests.smoke.test_api_smoke",
+            "name": "test_health_smoke"
+          },
+          {
+            "classname": "tests.smoke.test_api_smoke",
+            "name": "test_chat_non_stream_smoke"
+          },
+          {
+            "classname": "tests.smoke.test_api_smoke",
+            "name": "test_chat_stream_smoke_has_terminal_event"
+          }
+        ],
+        "same_selection_as_local": true
+      }
+    ],
+    "all_acceptance_checks_passed": true,
+    "main_sha_after": "533d4a3e464c6ce13b719145ce400099e6dcf32d",
+    "evidence_branch_sha_after": "d6553a96f6987c5f58fdafddb99fc28e19c72eb0",
+    "raw_files": [
+      {
+        "path": "tests/artifacts/final_plan/p3-0-2026-09-11/remote-evidence.json",
+        "sha256": "657fec4c0a09c4a149f71fd2826320ac92f0dfc262221f26b2d8b69ca1ff1cd2"
+      },
+      {
+        "path": "tests/artifacts/final_plan/p3-0-2026-09-11/pr2-disposition.json",
+        "sha256": "b95968bf18dbe11cc9141d7cb6d2fe65644f9ebc911566cc3ddaa3696b152fed"
+      },
+      {
+        "path": "tests/artifacts/final_plan/p3-0-2026-09-11/preflight.json",
+        "sha256": "6b51b5fc8f743462a124de532e795f20bc1196a2c11f3ed705fbfe353f859458"
+      }
+    ]
+  },
+  "ci_boundary": {
+    "event": "workflow_dispatch",
+    "full_suite_on_github": false,
+    "current_required_enforcement": "UNKNOWN",
+    "rules_changed": false,
+    "new_pr_created": false,
+    "merged_to_main": false,
+    "intentional_red_rerun_in_p3_0": false
+  }
+}

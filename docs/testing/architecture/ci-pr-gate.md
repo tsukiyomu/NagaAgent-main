@@ -1,26 +1,36 @@
 # CI / PR Gate
 
-> **当前迁移状态（2026-09-07）**：两个 workflow 已迁入 `981821be`，本地等价 selection
+> **历史迁移状态（2026-09-07）**：两个 workflow 已迁入 `981821be`，本地等价 selection
 > 各通过三次；新 revision 尚未在 GitHub 运行，Required 状态未确认或修改。
 > 下文带 C0 / 旧 run 的证据仍属于 source revision。当前以第 0 节和第 5 节为准；
 > 详见 [MIG-4 报告](../reports/upstream-migration-mig-4-execution-journal.md)。
+
+> **2026-09-11 / P3-0 DONE**：`357a8a6f` 已在 origin 完成两条 GitHub CI 与 JUnit 下载解析，
+> 与 9 月 10 日本地已测代码一致。PR #2 按 Owner 决定关闭且未合并；[P3-0 journal](../reports/p3-0-execution-journal.md) 为本次入口。
 
 ## 0. 当前 upstream 分支结论
 
 | 对象 | 已核对事实 | 尚未证明 |
 |---|---|---|
-| `PR Smoke Gate / Smoke Blocking Gate` | workflow 存在；精确 3 条，本地连续三次通过 | 新 GitHub run / Artifact / Required |
-| `PR Stream Contract Gate / Stream Contract Gate` | workflow 存在；精确 2/8 条，本地连续三次通过 | 新 GitHub run / Artifact / Required |
+| `PR Smoke Gate / Smoke Blocking Gate` | [run `34576477047`](https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576477047) success；3 passed，test/upload success；下载 ZIP digest 一致，JUnit 用例集合与本地一致 | 本次是 manual branch run，不是 PR merge-ref 或 Required enforcement 验证 |
+| `PR Stream Contract Gate / Stream Contract Gate` | [run `34576480832`](https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576480832) success；2 passed，test/upload success；下载 ZIP digest 一致，JUnit 用例集合与本地一致 | 本次是 manual branch run，未晋升 Required，保持 non-blocking 决定 |
 | JUnit 失败路径 | 本地合成 assertion failure 和连接隔离 error 均 exit 1，并生成可解析 JUnit | 本轮没有执行远端红灯或 always-upload |
 | Quality / Allure | 本地输出已验证；未接入这两个 PR job | 不作为合并或发布授权 |
 
 两份 job 现在显式设置 `NAGA_ENABLE_REAL_LLM_TESTS=0`、`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`，
 使用 `uv run --frozen`，只显式加载 `pytest_asyncio.plugin`。测试代码负责 collection-time 配置与连接隔离。
 Check 名称、触发条件、marker selection、JUnit 路径、`if: always()` 和 14 天保留期保持原契约。
-workflow `LANDED` 不等于远端 `VERIFIED`；旧 Smoke Required 证据不能搬到新 revision。
+本次两个 workflow 的运行已 `VERIFIED`，但旧 Smoke Required 证据不能搬到新 revision。
 
-本次未 push、PR、merge 或修改平台规则。Build & Release 保持上游原样且未执行；它与真实平台部署、
+本次将 `357a8a6f` 推送到 `tsukiyomu/NagaAgent-main` 的迁移分支，使用已有 `workflow_dispatch`，没有新建 PR、merge 或修改平台规则。
+两个 run 均为 attempt 1；Artifact 保留至 `2026-09-25T07:53:22Z`。ID、完整 digest、testcase 与步骤结果见 [机器证据](../reports/p3-0-baseline-evidence.json)。
+Build & Release 保持上游原样且未执行；它与真实平台部署、
 health、migration、rollback 是不同验收范围。全局边界见 [新测试基线](upstream-testing-baseline.md)。
+
+P3-0 处置：旧 [PR #2](https://github.com/tsukiyomu/NagaAgent-main/pull/2) 于 9 月 11 日按 Owner 决定关闭，
+API 读回 `closed / merged=false`，证据分支仍为 `d6553a96...`；下文的 Draft 描述保留为当时事实。当前分支的 resilience 文件与该恢复后文件相同，
+但故障注入历史不在其祖先链上，因此不用合并旧 PR 来重复获得 fixture 隔离。
+main 前后均为 `533d4a3...`。已满足 P3-0 的分支基线验收，不等于隔离已进入 main 或强制合并门禁已生效。
 
 ## 1. 文档定位
 
@@ -271,6 +281,7 @@ workflow YAML 负责“产生 check”，Branch Protection 或 Repository Rulese
 
 ```bash
 export NAGA_ENABLE_REAL_LLM_TESTS=0
+export NAGA_ENABLE_LANGFUSE_LAN_TESTS=0
 export PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
 uv sync --frozen --group test
 uv run --frozen python -m pytest -p pytest_asyncio.plugin tests/smoke -m "smoke and blocking" -q \

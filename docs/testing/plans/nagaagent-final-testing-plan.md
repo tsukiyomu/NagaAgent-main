@@ -2,10 +2,10 @@
 
 ## 1. 文档定位
 
-- 文档状态：`READY_FOR_REENTRY — P3-0 未启动`
+- 文档状态：`ACTIVE — P3-0 DONE；P3-1 尚未启动`
 - 计划类型：`Final / Consolidated Plan（NagaAgent Basic Agent Workflow Understanding + Testing）`
 - 制定日期：`2026-09-03`
-- 修订日期：`2026-09-08（MIG-5 恢复 Langfuse runtime；未启动 P3）`
+- 修订日期：`2026-09-11（P3-0 已收口；不推进 P3-1）`
 - 当前迁移分支：`codex/upstream-langfuse-sync`
 - 当前 upstream revision：`c2caa9079b9eb48129f550c43a5485231d404d3b`
 - 当前 runtime 基线：`7c88065c`，见 [MIG-5 journal](../reports/upstream-migration-mig-5-execution-journal.md)；迁移验收基线 `981821be` 保留于 [MIG-4 报告](../reports/upstream-migration-mig-4-execution-journal.md)
@@ -22,6 +22,9 @@
 > 旧 GitHub Gate 状态不自动继承；远端新 CI、真实模型/Memory/MCP 仍未验证。
 > 2026-09-08 补充：用户另行授权的 MIG-5 已在 `7c88065c` 恢复 Langfuse runtime，完成全套回归及合成 LAN trace 读回；
 > 它是现有基线的更新，不改变本计划 P3-0 的范围，也不代表已启动 P3。
+> **2026-09-11 当前状态**：P3-0 已完成：9 月 10 日本地回归与 9 月 11 日两条 GitHub CI 均绑定 `357a8a6f`，
+> JUnit 已下载验 hash 并解析；Owner 选择 origin，PR #2 已关闭且未合并。结果见 [P3-0 journal](../reports/p3-0-execution-journal.md)。
+> 上面迁移段落为历史记录；P3-0 完成不表示合并 main、晋升 Required 或启动 P3-1。
 
 这里的 `Final` 表示：在暂不另建新计划的阶段，本文件是 NagaAgent 测试工作的唯一后续路线图，
 后续新增范围优先作为本计划的工作单元或延期项维护。它不表示 P3-0～P3-9 已全部完成，也不表示
@@ -78,7 +81,18 @@ deterministic test
 
 ## 3. 当前证据基线
 
-### 3.1 2026-09-03 本地执行
+### 3.0 P3-0 当前验收基线（2026-09-10～11）
+
+- 本地目标：`codex/upstream-langfuse-sync` / `357a8a6f553882fd68ac9c951b0ae92422ccae1c`；应用、测试、workflow 和 lock 未改动。
+- 本次执行：完整 `189 passed / 2 skipped / 2 xfailed + 12 subtests passed`；Smoke `3 passed`；Stream `2 passed / 6 deselected`。命令、JUnit、hash 与依赖边界见 [机器证据](../reports/p3-0-baseline-evidence.json)。
+- `test_resilience.py` 已由 `981821be` 干净迁入，内容与恢复绿色的 C0 head 相同；C0 故障注入分支不是当前分支的祖先。不再重复 cherry-pick 两行隔离。
+- Owner 选择 `tsukiyomu/NagaAgent-main`；目标分支已发布。两条 `workflow_dispatch` run：[Smoke `34576477047`](https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576477047) 3 passed、[Stream `34576480832`](https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576480832) 2 passed。两个 ZIP digest 一致、JUnit 无 failure/error/skip，且用例集合与本地相同。
+- 旧 PR #2 于 9 月 11 日按 Owner 决定关闭且未合并；证据分支保留在 `d6553a96...`。`main` 仍为 `533d4a3...`，本次未修改 Required 规则或新建 PR。
+- Langfuse 的两项实现问题和一项脱敏局限仍未修复；详见 [当前基线风险](../architecture/upstream-testing-baseline.md#6-未完成范围与阅读规则)。当前候选是可复现的测试起点，不是零缺陷或发布批准。
+
+### 3.1 历史：2026-09-03 本地执行
+
+以下数字与含义仅属于迁移前 revision `d6553a96...`，不作为当前分支结果。
 
 | 范围 | 命令 | 结果 | 当前含义 |
 |---|---|---|---|
@@ -87,7 +101,9 @@ deterministic test
 | Agent Tool Loop | `uv run python -m pytest tests/unit/agentic_tool_loop -q` | `19 passed, 1 xfailed` | 收敛、dispatch、回注、compression、归因已有较完整本地覆盖 |
 | Quality Gate Unit | `uv run python -m pytest tests/unit/test_quality_gate_summary.py -q` | `5 passed` | 报告和 baseline 判定逻辑自身通过 |
 
-### 3.2 当前 CI/Gate
+### 3.2 历史：迁移前 CI/Gate
+
+下表保留计划制定时的证据。新目标仓库的 CI / Required 状态见 [CI 当前结论](../architecture/ci-pr-gate.md#0-当前-upstream-分支结论)，不能继承下表的历史 Required 标记。
 
 | Suite/Profile | 实现状态 | Gate 状态 | 当前证据 | 证明边界 |
 |---|---|---|---|---|
@@ -147,7 +163,7 @@ Basic Agent Workflow Understanding and Regression
 
 | 顺序 | 工作单元 | 当前状态 | 主要价值 | 建议 Gate |
 |---:|---|---|---|---|
-| 0 | P3-0 收口当前基线 | `NEXT` | 避免在证据分支上继续堆叠新能力 | 保持现状 |
+| 0 | P3-0 收口当前基线 | `DONE` | 本地/远端同 revision 回归、JUnit 与 Owner 处置已闭合 | 保持现状 |
 | 1 | P3-1 Basic Agent Workflow Understanding | `PLANNED` | 基于现有代码理解 Route、Loop、Tool 与 Finalize | 学习/验证记录，不设 Gate |
 | 2 | P3-2 Duplicate Tool Call ID Contract | `XFAIL_GAP` | 关闭幂等与重复执行风险 | 本地 deterministic，评审后再入 CI |
 | 3 | P3-3 User Stop / Cancel Finalization | `XFAIL_GAP` | 关闭真实用户流式取消缺口 | integration non-blocking 起步 |
@@ -164,7 +180,9 @@ Basic Agent Workflow Understanding and Regression
 
 ### P3-0：收口当前基线
 
-- 状态：`[ ] [NEXT]`
+- 状态：`[x] [DONE]`，run `P3-0-2026-09-11`，补齐 9 月 10 日 `REVIEW_NEEDED` 的剩余验收；[journal](../reports/p3-0-execution-journal.md)
+- Owner 决定（2026-09-11）：CI 目标为 `tsukiyomu/NagaAgent-main`；关闭旧 PR #2，不合并、不删除历史证据分支；不修改 Required 规则。
+- 执行上下文：验收分支为 `origin/codex/upstream-langfuse-sync`，代码 revision `357a8a6f`；本地全套与远端 Smoke / Stream 已在同一 revision 验证。后续收口提交只包含文档，不改变已测代码。2026-09-08 Langfuse 复核发现的两项实现问题和一项脱敏局限保留为已知风险，本单元不默认修复或视为已关闭。
 - 目的：把 Closed Loop V1 的证据分支、主分支和文档状态整理成稳定起点，避免后续 workflow 学习和测试工作与故障注入历史混杂。
 - 主要动作：
   1. 确认 PR #2 最终处理方式。
@@ -172,6 +190,7 @@ Basic Agent Workflow Understanding and Regression
   3. 在目标分支重新执行完整 pytest、Smoke 和 Stream Contract。
   4. 更新 `CURRENT_PROGRESS.md` 的当前计划和 Architecture `PARTIAL` 项。
 - 完成证据：目标分支 revision、完整 pytest 结果、两条 CI run、JUnit Artifact、Owner 决定。
+- 本轮结果：fixture 来源、9 月 10 日三组本地回归、9 月 11 日两条 CI / JUnit 下载解析、Owner 处置与当前文档同步均已完成，按原验收条件勾选。只发布迁移分支；不合并 main，不把 manual CI success 写成 PR 合并强制证明。
 - 不包含：Required Check 晋升、真实 Remote Memory 测试、任何新可观测平台接入。
 - 面试价值：能够解释为什么先冻结可信 baseline，再开始新的 workflow 理解与测试工作。
 
@@ -503,6 +522,8 @@ P3-8、P3-9、权限/Prompt Injection、更多真实依赖和 Release Gate 属�
 | Run ID | Date | Selected Task | Status | Evidence | Next Recommended Task |
 |---|---|---|---|---|---|
 | FTA-CORR-1 | 2026-09-04 | 移除 Final Plan 与 Jaeger 的错误关联，将 P3-1 改为基于 NagaAgent 的 Basic Agent Workflow 学习 | `DONE` | 仓库代码/配置搜索未发现 Jaeger 实现；P3-1、依赖项和分析文档已按现有 Route/Loop/Tool 代码边界修正 | P3-0 收口当前基线 |
+| P3-0-2026-09-10 | 2026-09-10 | P3-0 收口当前基线 | `REVIEW_NEEDED` | `357a8a6f` 本地 full 189 passed + 2 skip + 2 xfail + 12 subtests；Smoke 3 / Stream 2；fixture 干净迁入已核实；[journal](../reports/p3-0-execution-journal.md)、[manifest](../reports/p3-0-baseline-evidence.json)；Owner 与新远端证据待补 | 确认目标仓库及 PR #2 处置，补齐同一目标 revision 的两条 CI / JUnit；不启动 P3-1 |
+| P3-0-2026-09-11 | 2026-09-11 | P3-0 剩余远端与 Owner 验收 | `DONE` | Owner 选择 origin，PR #2 closed / unmerged；`357a8a6f` Smoke `34576477047` / Stream `34576480832` success；ZIP digest 与 JUnit 用例集合核对通过；[journal](../reports/p3-0-execution-journal.md)、[manifest](../reports/p3-0-baseline-evidence.json) | P3-1 基础 Agent workflow 理解；本轮未启动 |
 
 最终原则：
 

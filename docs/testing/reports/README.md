@@ -20,6 +20,7 @@
 
 ## 执行记录
 
+- [2026-09-10～11：P3-0 收口当前基线](p3-0-execution-journal.md) — `DONE`；同 revision 的本地 full / Smoke / Stream、origin 两条 GitHub CI、JUnit 下载验 hash / 解析与 Owner 处置均已核实；PR #2 关闭未合并，Required 未改。详细命令与 hash 在 [机器证据](p3-0-baseline-evidence.json)。
 - [2026-09-08：MIG-5 Langfuse runtime 恢复](upstream-migration-mig-5-execution-journal.md) — `DONE`；原 LAN 服务合成 trace 上传/读回通过，189 passed / 2 skipped / 2 xfailed + 12 subtests；默认不上传正文，真实模型/Memory/MCP 未验收。
 - [2026-09-03：Final Testing Plan 价值与决策分析](final-testing-plan-analyze.md) — `DONE / TEACH_BACK_PENDING`；解释 P3-0～P3-9 的证据依据、工程价值、简历价值、建议完成线与不可夸大边界，不代表任何 P3 实施单元已完成。
 - [2026-07-28：P0 干净环境验收](p0-clean-environment-run-2026-07-28.md) — `VERIFIED`（用户于 2026-08-01 临时确认）；仅适用于记录中的执行快照，当前 revision 变化后仍需重跑。
@@ -39,4 +40,5 @@
 
 - `allure-results/`、`allure-report/`、`tests/artifacts/quality_gate/` 和 `tests/artifacts/closed_loop_v1/` 是运行时生成目录，由 `.gitignore` 排除，不作为源码提交。
 - `tests/baseline/quality_gate/` 是人工评审后维护的健康基线，继续纳入版本控制；测试运行不得无审查地覆盖或晋升 baseline。
-- Smoke 与 Stream Contract workflow 已配置独立 JUnit Artifact，使用 suite/run/attempt 唯一名称并保留 14 天；本地 success/failure 报告内容已验证，commit `533d4a3...` 的两个远端 success run 已验证 upload step、artifact ID/digest 和 expiry。2026-08-31 的 Stream failure run `33392294451` 已进一步证明 pytest 失败后 `if: always()` upload 成功；下载 ZIP 的 digest 与 GitHub metadata 一致，内部 JUnit 可定位 nodeid、assertion、run 和 revision。恢复 run `33392789083` 重新绿色，C0-3 与 C0-4 均已关闭。证据 PR #2 保持 Draft，不应按普通 merge 进入 `main`。
+- Smoke 与 Stream Contract workflow 已配置独立 JUnit Artifact，使用 suite/run/attempt 唯一名称并保留 14 天；本地 success/failure 报告内容已验证，commit `533d4a3...` 的两个远端 success run 已验证 upload step、artifact ID/digest 和 expiry。2026-08-31 的 Stream failure run `33392294451` 已进一步证明 pytest 失败后 `if: always()` upload 成功；下载 ZIP 的 digest 与 GitHub metadata 一致，内部 JUnit 可定位 nodeid、assertion、run 和 revision。恢复 run `33392789083` 重新绿色，C0-3 与 C0-4 均已关闭。证据 PR #2 当时为 Draft；2026-09-10 实测打开但已非 Draft；9 月 11 日按 Owner 决定关闭、未合并，证据分支保留。
+- P3-0 新增的两条绿色 run 绑定 `357a8a6f`，不继承旧故障注入的 revision。下载 ZIP/XML 保存在本地 `tests/artifacts/final_plan/`；长期 [P3-0 索引](p3-0-baseline-evidence.json) 保存 run、revision、digest、testcase 与步骤结果，不承诺 GitHub Artifact 永久可下载。

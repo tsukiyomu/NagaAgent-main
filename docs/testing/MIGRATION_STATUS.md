@@ -3,7 +3,7 @@
 > 当前目标分支：`codex/upstream-langfuse-sync`
 > 上游基线：`upstream/main@c2caa9079b9eb48129f550c43a5485231d404d3b`
 > 旧证据分支：`codex/c0-4-intentional-red@d6553a96f6987c5f58fdafddb99fc28e19c72eb0`
-> 状态日期：`2026-09-08`
+> 状态日期：`2026-09-11`（MIG 历史保留；追加 P3-0 验收结果）
 
 全体 `docs/` 的来源边界见 [`../MIGRATION_STATUS.md`](../MIGRATION_STATUS.md)。
 
@@ -13,7 +13,8 @@
 MIG-1 保存了知识、历史证据和后续计划；MIG-2 迁入 Langfuse adapter 与单元测试。
 MIG-3 随后迁入兼容测试/CI 资产，MIG-4 在 `981821be` 完成本地回归并形成新测试基线。
 MIG-0～MIG-4 的本地迁移范围已完成；用户追加的 MIG-5 在 `7c88065c` 恢复 Langfuse runtime，
-通过原 LAN 服务的合成 trace 上传/读回。仍未发布到 GitHub。
+通过原 LAN 服务的合成 trace 上传/读回。9 月 11 日 P3-0 将 `357a8a6f` 发布到
+`tsukiyomu/NagaAgent-main` 的迁移分支，完成两条 CI 与 JUnit 下载解析；main 未合并。
 
 以下四类状态必须分开理解：
 
@@ -23,7 +24,7 @@ MIG-0～MIG-4 的本地迁移范围已完成；用户追加的 MIG-5 在 `7c8806
 | 历史 C0 报告 | `VERIFIED_ON_SOURCE_REVISION` | 报告中的运行结果仍对其记录的旧 revision 有效 |
 | Langfuse runtime/tests | `LANDED` / `VERIFIED_SYNTHETIC_LAN` | SDK/chat/LLM/tool/lifecycle 接线完成；58 adapter cases + 9 runtime cases + 1 wiring case；提交后 LAN 2 traces / 7 observations；CI 仍 `NOT_WIRED` |
 | 测试基座 | `LANDED` / 本地 `VERIFIED` | MIG-5 全套 189 passed、2 skipped、2 xfailed，另有 12 subtests passed |
-| Smoke / Stream CI 配置 | `LANDED`；远端 `UNVERIFIED_ON_TARGET` | selection 本地各通过 3 次；无新 GitHub run，Required 未确认或更改 |
+| Smoke / Stream CI | `LANDED` / `VERIFIED_ON_TARGET` | P3-0 在 `357a8a6f` 的 manual CI 为 Smoke 3 / Stream 2 passed，JUnit 已下载解析；Required 未重新验证或更改 |
 | 报告链路 | 本地 `VERIFIED` | JUnit、Allure 原始结果、32 条子集的 Quality 摘要；未晋升性能基线 |
 | 架构与计划说明 | `PARTIAL` | 新基线、CI/Langfuse 当前边界、状态入口已同步；其余历史模块说明未逐行重新认证 |
 
@@ -44,7 +45,7 @@ MIG-0～MIG-4 的本地迁移范围已完成；用户追加的 MIG-5 在 `7c8806
 
 ### 目标分支当前尚未存在或尚未验证
 
-- 新 revision 的 GitHub Actions / Artifact 实际运行及 Required 配置；本次没有 push / PR / 平台规则操作。
+- 新 revision 的 Required enforcement、PR merge-ref 验证和 main 合并；P3-0 只完成分支发布与 manual CI / JUnit，没有变更规则。
 - user-stop 与跨轮重复 tool id 去重；仍为两个原有 xfail，不计作已实现。
 - 当前版本的可信性能基线；旧 JSON 仅保留来源数值，本次独立 advisory bootstrap 不作晋升。
 - 真实 LLM、Remote Memory、MCP、staging、持久化回读和部署验证；Langfuse UI 浏览器交互及 motion acknowledgement 也未验收。
@@ -55,7 +56,7 @@ MIG-0～MIG-4 的本地迁移范围已完成；用户追加的 MIG-5 在 `7c8806
    不把它们改写为当前 upstream 结果。
 2. 当前已核对范围以 [`architecture/upstream-testing-baseline.md`](architecture/upstream-testing-baseline.md)
    为入口。旧 Part 文档仍可帮助理解断言，但旧运行/优先级/Required 事实不能无条件继承。
-3. `plans/nagaagent-final-testing-plan.md` 已满足迁移前置条件，处于可重新进入状态；P3-0 未启动。
+3. `plans/nagaagent-final-testing-plan.md` 的 P3-0 已于 9 月 11 日完成；P3-1 workflow 学习尚未启动。
 4. workflow 文件只证明配置存在，远端执行和 Required 必须分别取证，不能自动继承旧 Check 状态。
 5. Langfuse 是 observability side channel，不是 pytest assertion 或 CI gate truth。
 
@@ -76,12 +77,13 @@ MIG-0～MIG-4 的本地迁移范围已完成；用户追加的 MIG-5 在 `7c8806
 | MIG-3 迁移与隔离理由 | [`reports/upstream-migration-mig-3-execution-journal.md`](reports/upstream-migration-mig-3-execution-journal.md) |
 | MIG-4 回归与新基线 | [`reports/upstream-migration-mig-4-execution-journal.md`](reports/upstream-migration-mig-4-execution-journal.md) / [机器清单](reports/upstream-migration-mig-4-baseline.json) |
 | MIG-5 Langfuse 可用性与更新基线 | [journal](reports/upstream-migration-mig-5-execution-journal.md) / [机器清单](reports/upstream-migration-mig-5-evidence.json) |
+| P3-0 基线收口与 Owner 决定 | [journal](reports/p3-0-execution-journal.md) / [机器清单](reports/p3-0-baseline-evidence.json)；PR #2 已关闭未合并、证据分支保留 |
 | 旧 Closed Loop 结果 | 历史报告中记录的 source revision、GitHub run 和 Artifact |
 | 目标分支实现 | 当前 `codex/upstream-langfuse-sync` 代码树 |
-| 目标分支测试/CI 状态 | MIG-5 本地回归与 LAN 证据、MIG-4 报告链路、当前 workflow 文件；远端新 run 尚无证据 |
+| 目标分支测试/CI 状态 | P3-0 同 revision 本地与远端验收；Langfuse LAN 保留 MIG-5 证据，Allure/Quality 保留 MIG-4 边界；[CI 当前结论](architecture/ci-pr-gate.md#0-当前-upstream-分支结论) |
 
 ## 6. 下一步
 
-可回到 P3-0，以 `7c88065c` 整理基础 Agent workflow、现有测试和缺口；本次没有启动它。
-Langfuse 已恢复；已有 API 进程需重启才能加载新代码，不以配置存在代替 trace 读回证明。
-远端 CI 发布/复验也尚未执行，不由本地迁移完成状态隐含授权。
+下一工作单元为 P3-1 基础 Agent workflow 理解；本轮没有启动。P3-0 已在 Owner 明确选择后完成远端验收。
+Langfuse 的正文状态和已知风险以 [当前测试基线](architecture/upstream-testing-baseline.md#6-未完成范围与阅读规则) 为准，
+不能把 MIG-5 初始“默认禁用 / 需重启”当成此后所有活动进程的状态，也不能把本次 CI 绿色当作这些风险已修复。

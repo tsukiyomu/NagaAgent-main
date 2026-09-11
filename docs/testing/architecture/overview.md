@@ -1,6 +1,6 @@
 ﻿# NagaAgent Testing Architecture
 
-> **Migration status（2026-09-07）：当前测试基线已复验，历史细节仍 `PARTIAL`。**
+> **历史 Migration status（2026-09-07）：当时测试基线已复验，历史细节仍 `PARTIAL`。**
 > `981821be` 完成 MIG-3/MIG-4：179 passed、1 skipped、2 xfailed，另有 12 subtests passed；
 > Smoke / Stream 本地各通过三次。当前模块映射、配置隔离、报告和 CD 边界见
 > [新测试基线](upstream-testing-baseline.md)，当前 CI 事实见 [CI 第 0 节](ci-pr-gate.md#0-当前-upstream-分支结论)。
@@ -9,6 +9,11 @@
 > 全套 189 passed / 2 skipped / 2 xfailed + 12 subtests，另完成合成 LAN trace 读回。
 > 详见 [当前 Langfuse 用法](langfuse-observability.md)；远端新 CI 仍未验证。
 
+> **P3-0 更新（2026-09-11）**：`357a8a6f` 的 9 月 10 日本地全套通过；9 月 11 日 origin 的 Smoke 3 条、Stream 2 条 CI 通过，JUnit 已下载验 hash 并解析。
+> [本次 journal](../reports/p3-0-execution-journal.md) 记录 `DONE`：Owner 选择 `tsukiyomu/NagaAgent-main`，PR #2 已关闭且未合并，旧证据分支保留；main / Required 未修改。
+> 当前 profile、已知 Langfuse 风险与明确的 Architecture `PARTIAL` 项统一见 [当前基线](upstream-testing-baseline.md)。
+> 下文提到 Smoke Required、旧耗时和 C0 PR 的段落只属于其历史 revision，不证明新目标仓库状态。
+
 ## 0. 阅读说明
 
 ### 0.1 文档定位
@@ -16,6 +21,9 @@
 - 当前文档以“已落地能力 + 当前 gaps + 后续扩展”三部分组织，而不是执行前计划稿。
 
 ### 0.2 阅读顺序
+
+返回项目时先看 [`CURRENT_PROGRESS`](../CURRENT_PROGRESS.md) 和 [当前基线](upstream-testing-baseline.md)，再按下面的模块入口深入；P3-0 收口与 P3-1 workflow 学习不是同一工作单元。
+
 1. 先读 `1. 全局测试原则`。
 2. 再读 `2. p2_api 模块`（当前优先模块）。
 3. 如果要看 `p2_api` 的详细用例、执行链路和业务映射，再读 [`part-02-api-stream.md`](part-02-api-stream.md)。
@@ -68,8 +76,8 @@
 - `fixtures`：跨层复用的 client、stub、故障注入与清理。
 
 ### 1.3 门禁与运行原则
-- PR blocking 当前只跑同时带 `smoke` 和 `blocking` marker 的测试；Draft PR 页面显示 `Smoke Blocking Gate` 为 `Required`。
-- integration 中两条经评审的 SSE 契约通过独立 `Stream Contract Gate` 在 PR 上运行，但当前为 `NON_BLOCKING`。
+- 当前 Smoke workflow 只选同时带 `smoke` 和 `blocking` marker 的测试；旧 C0 Draft PR 的 Required 证据不继承到新目标仓库。
+- 两条经评审 SSE 契约已有独立 `Stream Contract Gate`；P3-0 已验证目标分支远端 run / JUnit，Owner 暂缓 Required 晋升的决定保留，规则未重新验证。
 - unit 作为快速反馈层，优先覆盖收敛与边界逻辑。
 
 ### 1.4 通用测试基座
@@ -291,8 +299,8 @@
 ### 8.1 当前门禁目标
 - 当前使用两个独立 workflow 运行离线、确定性测试：`smoke and blocking` 与两条
   `integration and blocking and not real_llm` SSE 契约。
-- `Smoke Blocking Gate` 当前显示为 `Required`；`Stream Contract Gate` 已完成 PR 接线，但当前为
-  `NON_BLOCKING`，是否升级为 Required 由后续人类评审决定。
+- 历史 C0 的 `Smoke Blocking Gate` 显示为 `Required`，Stream 为 `NON_BLOCKING`；新目标仓库的实际
+  Required 状态仍为 `UNKNOWN`，本次没有修改规则。以 [CI 第 0 节](ci-pr-gate.md#0-当前-upstream-分支结论) 为准。
 
 ### 8.2 workflow 触发条件
 - `pull_request`：目标分支为 `main` 或 `master`。
@@ -309,8 +317,9 @@
   -> 根据退出码判定 job 通过/失败。
 
 ### 8.4 本地复现方式
-- `uv run python -m pytest tests/smoke -m "smoke and blocking" -q`
-- `uv run python -m pytest tests/integration/chat_stream/test_resilience.py -m "integration and blocking and not real_llm" -q`
+- 先设置 `NAGA_ENABLE_REAL_LLM_TESTS=0`、`NAGA_ENABLE_LANGFUSE_LAN_TESTS=0`、`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`。
+- `uv run --frozen python -m pytest -p pytest_asyncio.plugin tests/smoke -m "smoke and blocking" -q`
+- `uv run --frozen python -m pytest -p pytest_asyncio.plugin tests/integration/chat_stream/test_resilience.py -m "integration and blocking and not real_llm" -q`
 
 ### 8.5 与测试分层关系
 - blocking 只放低成本高确定性用例。

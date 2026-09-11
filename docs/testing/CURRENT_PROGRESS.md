@@ -1,9 +1,9 @@
 # Testing Current Progress
 
-> 最后更新：`2026-09-08`\
-> 当前计划：[`NagaAgent Upstream Migration Plan`](plans/upstream-migration-plan.md)  
+> 最后更新：`2026-09-11`\
+> 当前计划：[`NagaAgent Final Testing Plan`](plans/nagaagent-final-testing-plan.md)\
 > 迁移状态真相源：[`MIGRATION_STATUS.md`](MIGRATION_STATUS.md)  
-> 后续测试计划（P3-0 未启动）：[`NagaAgent Final Testing Plan`](plans/nagaagent-final-testing-plan.md)\
+> 已完成迁移前置：[`NagaAgent Upstream Migration Plan`](plans/upstream-migration-plan.md)\
 > 已完成前置计划：[`Closed Loop V1 Implementation Plan`](plans/closed-loop-v1-implementation-plan.md)  
 > 本页职责：只回答“现在做到哪里、为什么还没完成、下一步是什么”。详细调查和逐次运行记录保留在 `reports/`，不在这里重复。
 
@@ -11,23 +11,26 @@
 
 | 项目 | 当前状态 |
 |---|---|
-| 总体阶段 | MIG-0～MIG-5 `DONE`：本地迁移完成，Langfuse runtime 已恢复并验收 |
-| 当前工作单元 | 无进行中单元；P3-0 未启动 |
-| 最近完成 | MIG-5：SDK、chat/LLM/tool/lifecycle 接线与 LAN 合成 trace 上传、读回 |
-| 当前代码基线 | `7c88065c`；MIG-4 历史测试基线 `981821be` 保留；原证据分支 `d6553a96...` 不动 |
-| 本地测试 | **189 passed、2 skipped、2 xfailed**；另有 12 subtests passed；JUnit 无 failure/error |
-| 报告产物 | 本轮完整 JUnit、LAN trace/session/parent-child 证据及源码 hash；Allure/Quality 的已验证事实仍绑定 MIG-4 |
-| Langfuse | **真实可用**：原 LAN 服务、原凭据、SDK 4.15.1；提交后验收 2 traces / 7 observations。默认不上传正文；重启现有 API 进程后加载新代码 |
-| GitHub / Gate | 两个 workflow 已迁入；新 revision 远端运行及 Required 状态未验证；未 push、PR 或改规则 |
+| 总体阶段 | MIG 历史验收保留；P3-0 本地、远端 CI 与 Owner 验收已收口 |
+| 当前工作单元 | **P3-0 `DONE`**；P3-1 未启动 |
+| 最近完成 | 迁移分支发布到 origin；Smoke / Stream GitHub run 与 JUnit 下载解析；PR #2 关闭；当前文档同步 |
+| 当前代码基线 | `codex/upstream-langfuse-sync@357a8a6f` 已在 origin 验收；runtime 代码仍为 `7c88065c`；收口提交仅改文档，main 未合并 |
+| 本地测试 | **2026-09-10：189 passed、2 skipped、2 xfailed + 12 subtests passed**；Smoke 3 passed，Stream 2 passed / 6 deselected |
+| 报告产物 | [P3-0 journal](reports/p3-0-execution-journal.md) / [机器证据](reports/p3-0-baseline-evidence.json)，含本地三组结果、远端两条 run、下载/解析/hash 与 Owner 决定；Allure/Quality 仍绑定 MIG-4 |
+| Langfuse | 9 月 8 日已确认重启后真实聊天两层有正文；9 月 10 日保存的正文开关仍为 true。本轮未重跑 LAN；多轮汇总、提前关闭时序、JSON 字符串脱敏问题仍未修复 |
+| GitHub / Gate | `tsukiyomu/NagaAgent-main`：[Smoke 3 passed](https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576477047)、[Stream 2 passed](https://github.com/tsukiyomu/NagaAgent-main/actions/runs/34576480832)；PR #2 已关闭且未合并，证据分支保留；Required 未修改或重新验证 |
 | Remote memory | 产品能力保留；SSE 测试中隔离，真实集成 `DELAYED` |
-| 下一步 | 回到 P3-0 理解基础 Agent workflow 与测试范围；本轮未启动 P3-0，也未扩大真实外部依赖验收 |
-| 文档 / Architecture | 当前进度、迁移记录、测试基线、Langfuse 用法已同步；各 Part 历史细节未全部逐行复核，整体仍 `PARTIAL` |
+| 下一步 | P3-1：通过无工具、工具调用、summary 三条路径理解基础 Agent workflow；本轮不启动 |
+| 文档 / Architecture | 当前 baseline、overview、CI 入口已同步；Part 细节、完整 workflow 时序和未验证真实依赖仍 `PARTIAL`，没有宣布全架构复核完成 |
 
-一句话判断：**本地测试基座和 Langfuse 运行时观测链路都已可用；后续重点是业务测试与理解 Agent workflow，远端 CI 仍需单独验收。**
+一句话判断：**P3-0 已有同一代码 revision 的本地回归、真实 GitHub CI、可核对 JUnit 和 Owner 决定，可以作为下一阶段起点；不是完整产品或发布验收。**
 
 为什么这样迁移见 [MIG-3 记录](reports/upstream-migration-mig-3-execution-journal.md)；本轮结果与缺口见
-[MIG-5 journal](reports/upstream-migration-mig-5-execution-journal.md)；按模块理解现有测试见
+[P3-0 journal](reports/p3-0-execution-journal.md)；按模块理解现有测试见
 [新测试基线](architecture/upstream-testing-baseline.md)。
+
+P3-0 不重复合并故障注入历史：当前 resilience 文件已在 `981821be` 迁入，保留隔离与恢复后的断言。
+本轮只登记已知 Langfuse 风险，不把它们悄悄算作修复；详见 [基线未完成范围](architecture/upstream-testing-baseline.md#6-未完成范围与阅读规则)。
 
 > 以下 C0 材料是 pre-migration history，证据含义仅绑定其记录的 source revision。
 
@@ -122,6 +125,10 @@ CI/CD 的环境、执行策略和 Gate 等级。不能把所有复杂度都归�
 2026-09-07：上述跨层结论已归入 [`architecture/upstream-testing-baseline.md`](architecture/upstream-testing-baseline.md)
 第 5 节，并由 overview / CI 入口链接。新分支的当前测试与 CI 边界已更新；
 其他旧模块页和整体产品架构尚未逐行核验，Architecture 整体仍为 `PARTIAL`。
+
+2026-09-10～11 P3-0：当前入口、测试/CI 命令、fixture 来源、远端 run / Artifact 与已知风险已重新核对；剩余 `PARTIAL` 指向
+Part 2/4/8/11 的逐项历史说明、P3-1 的三条 workflow 与 owner/message 映射，以及真实依赖和部署范围。
+不是“所有 architecture 都未同步”，也不是“所有 architecture 都已验收”。
 
 ## 6. 历史 C0 证明边界（非当前 upstream Gate 状态）
 
