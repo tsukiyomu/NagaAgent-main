@@ -20,6 +20,7 @@ ALLOWED_GATE_RESULTS = {"pass", "warn", "fail"}
 ALLOWED_FINAL_STATUS = {"success", "degraded", "failed"}
 ALLOWED_FAILURE_STAGE = {
     "none",
+    "unknown",
     "llm_output_parse",
     "tool_call_normalize",
     "tool_dispatch",
@@ -60,6 +61,8 @@ def infer_feature(nodeid: str, marker_names: set[str]) -> str | None:
         return "p2_api"
     if normalized.startswith("tests/unit/agentic_tool_loop/"):
         return "agentic_tool_loop"
+    if normalized.startswith("tests/golden_cases/"):
+        return "golden_cases"
     return None
 
 
@@ -124,7 +127,7 @@ def _map_outcome_to_final_status(outcome: str) -> str:
 
 def _default_failure_stage(outcome: str) -> str:
     if outcome == "failed":
-        return "finalize"
+        return "unknown"
     return "none"
 
 
@@ -255,6 +258,11 @@ def _build_case_record(record: dict[str, Any]) -> dict[str, Any]:
     if "tool_count" not in metrics and payload.get("tool_call_count") is not None:
         metrics["tool_count"] = payload.get("tool_call_count")
 
+    reported_final_status = payload.get("final_status")
+    reported_failure_stage = payload.get("failure_stage")
+    has_final_status = isinstance(reported_final_status, str) and reported_final_status in ALLOWED_FINAL_STATUS
+    has_failure_stage = isinstance(reported_failure_stage, str) and reported_failure_stage in ALLOWED_FAILURE_STAGE
+
     case = {
         "nodeid": nodeid,
         "case_id": str(payload.get("case_id") or nodeid),
@@ -264,9 +272,11 @@ def _build_case_record(record: dict[str, Any]) -> dict[str, Any]:
         "non_blocking": bool(payload.get("non_blocking", feature == "real_llm")),
         "outcome": outcome,
         "duration_s": _coerce_float(record.get("duration")),
-        "final_status": _normalize_final_status(payload.get("final_status"), outcome),
-        "failure_stage": _normalize_failure_stage(payload.get("failure_stage"), outcome),
-        "reason": str(payload.get("reason") or ""),
+        "final_status": _normalize_final_status(reported_final_status, outcome),
+        "final_status_source": "case_report" if has_final_status else "pytest_outcome",
+        "failure_stage": _normalize_failure_stage(reported_failure_stage, outcome),
+        "failure_stage_source": "case_report" if has_failure_stage else "fallback",
+        "reason": str(payload.get("reason") or record.get("failure_reason") or ""),
         "metrics": metrics,
     }
     return case
@@ -294,7 +304,10 @@ def _build_failures(cases: list[dict[str, Any]]) -> list[dict[str, Any]]:
         failures.append(
             {
                 "case_id": case["case_id"],
+                "nodeid": case["nodeid"],
                 "feature": case["feature"],
+                "outcome": case["outcome"],
+                "final_status": case["final_status"],
                 "failure_stage": case["failure_stage"],
                 "reason": reason,
             }
@@ -499,10 +512,21 @@ def _build_summary_markdown(payload: dict[str, Any], gate_notes: list[str]) -> s
         "",
         "## Regression",
         f"- baseline: `{regression.get('baseline')}`",
+        f"- baseline_version: `{regression.get('baseline_version')}`",
+        f"- baseline_case_count: `{regression.get('baseline_case_count')}`",
         f"- pass_rate_delta: `{regression.get('pass_rate_delta')}`",
         f"- latency_delta: `{regression.get('latency_delta')}`",
         f"- rounds_delta: `{regression.get('rounds_delta')}`",
+        "",
+        "## Cases",
+        "",
+        "| Case | Pytest | Final status | Failure stage |",
+        "|---|---|---|---|",
     ]
+    for case in payload["cases"]:
+        lines.append(
+            f"| `{case['case_id']}` | `{case['outcome']}` | `{case['final_status']}` | `{case['failure_stage']}` |"
+        )
     if gate_notes:
         lines.extend(["", "## Gate Notes"])
         for note in gate_notes:
@@ -511,7 +535,9 @@ def _build_summary_markdown(payload: dict[str, Any], gate_notes: list[str]) -> s
         lines.extend(["", "## Failures"])
         for failure in failures[:10]:
             lines.append(
-                f"- `{failure['case_id']}` @ `{failure['failure_stage']}`: {failure['reason']}"
+                f"- `{failure['case_id']}`: pytest=`{failure['outcome']}`, "
+                f"final_status=`{failure['final_status']}`, failure_stage=`{failure['failure_stage']}`: "
+                f"{failure['reason']}"
             )
     return "\n".join(lines).rstrip() + "\n"
 
@@ -565,6 +591,8 @@ def generate_quality_gate_artifacts(
 
     regression = {
         "baseline": str(baseline_path),
+        "baseline_version": baseline.get("baseline_version") if baseline else None,
+        "baseline_case_count": baseline.get("case_count") if baseline else None,
         "pass_rate_delta": gate_meta["baseline_compare"]["pass_rate_delta"],
         "latency_delta": gate_meta["baseline_compare"]["latency_delta"],
         "rounds_delta": gate_meta["baseline_compare"]["rounds_delta"],
@@ -576,6 +604,7 @@ def generate_quality_gate_artifacts(
         "run_id": run_id,
         "profile": config.profile,
         "suite": config.suite_name,
+        "cases": cases,
         "summary": summary,
         "metrics": metrics,
         "regression": regression,

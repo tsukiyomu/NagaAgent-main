@@ -158,7 +158,7 @@ def pytest_runtest_makereport(item, call):
             if isinstance(quality_case_payload, dict) and isinstance(quality_case_payload.get("story"), str)
             else "correctness"
         )
-        if feature in {"p2_api", "agentic_tool_loop", "real_llm"}:
+        if feature in {"p2_api", "agentic_tool_loop", "golden_cases", "real_llm"}:
             apply_allure_case_labels(feature=feature, story=story)
         records_by_nodeid[report.nodeid] = candidate
         if _allure_reporting_enabled(item.config):

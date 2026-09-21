@@ -1,0 +1,100 @@
+name: PR Agent Workflow Regression
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+      - codex/upstream-langfuse-sync
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-agent-workflow-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  agent-workflow-regression:
+    name: Agent Workflow Regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NAGA_ENABLE_REAL_LLM_TESTS: "0"
+      NAGA_ENABLE_LANGFUSE_LAN_TESTS: "0"
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+      EVIDENCE_DIR: tests/artifacts/allure/agent-workflow-${{ github.run_id }}-${{ github.run_attempt }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: latest
+
+      - name: Install project and test dependencies
+        run: uv sync --frozen --group test
+
+      - name: Check Allure adapter and CLI availability
+        run: |
+          uv run --frozen python -m pytest -p pytest_asyncio.plugin -p allure_pytest.plugin --version
+          if ! command -v allure >/dev/null 2>&1; then
+            npm install --global allure-commandline@2.34.1 || true
+          fi
+          if command -v allure >/dev/null 2>&1; then
+            allure --version
+          else
+            echo "Allure CLI unavailable; pytest will still run and preserve result data."
+          fi
+
+      - name: Run deterministic Agent Workflow regression
+        id: test
+        run: |
+          mkdir -p "$EVIDENCE_DIR"
+          set +e
+          uv run --frozen python -m pytest \
+            -p pytest_asyncio.plugin -p allure_pytest.plugin \
+            tests/unit/agentic_tool_loop tests/golden_cases \
+            -m "not real_llm" -q \
+            --quality-gate --quality-gate-profile stub \
+            --quality-gate-baseline-dir=tests/baseline/quality_gate/agent_workflow \
+            --quality-gate-artifacts-dir="$EVIDENCE_DIR/quality" \
+            --junitxml="$EVIDENCE_DIR/junit-agent-workflow.xml" \
+            --alluredir="$EVIDENCE_DIR/allure-results"
+          test_exit_code=$?
+          set -e
+          printf 'pytest_exit_code=%s\n' "$test_exit_code" > "$EVIDENCE_DIR/pytest-status.txt"
+          exit "$test_exit_code"
+
+      - name: Generate Allure HTML even after test failure
+        if: always()
+        run: |
+          test -n "$(find "$EVIDENCE_DIR/allure-results" -name '*-result.json' -print -quit 2>/dev/null)"
+          allure generate "$EVIDENCE_DIR/allure-results" -o "$EVIDENCE_DIR/allure-report"
+          test -f "$EVIDENCE_DIR/allure-report/index.html"
+
+      - name: Verify evidence files
+        if: always()
+        run: |
+          test -s "$EVIDENCE_DIR/pytest-status.txt"
+          test -s "$EVIDENCE_DIR/junit-agent-workflow.xml"
+          test -s "$EVIDENCE_DIR/quality/agent_quality_report.json"
+          test -s "$EVIDENCE_DIR/quality/agent_quality_summary.md"
+          test -f "$EVIDENCE_DIR/allure-report/index.html"
+
+      - name: Upload Agent Workflow evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-workflow-regression-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.EVIDENCE_DIR }}/
+          if-no-files-found: error
+          retention-days: 14

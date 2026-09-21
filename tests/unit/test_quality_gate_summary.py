@@ -228,3 +228,37 @@ def test_quality_gate_bootstrap_writes_missing_baseline(tmp_path: Path):
     assert baseline_path.exists()
     assert report["regression"]["baseline_bootstrap"] is True
     assert report["summary"]["gate_result"] in {"pass", "warn", "fail"}
+
+
+def test_golden_case_is_included_with_case_status_and_failure_reason(tmp_path: Path):
+    nodeid = "tests/golden_cases/test_agent_workflow_golden_cases.py::test_stub[case-1]"
+    record = _record(
+        nodeid=nodeid,
+        outcome="failed",
+        blocking=False,
+        final_status="degraded",
+        failure_stage="tool_dispatch",
+    )
+    record["user_properties"][0][1].update({"case_id": "case-1", "feature": "golden_cases"})
+    record["failure_reason"] = "GoldenCaseAssertionError: required tool not called"
+
+    report = _run_gate(tmp_path, [record])
+
+    assert report["summary"]["total"] == 1
+    assert report["cases"][0]["case_id"] == "case-1"
+    assert report["cases"][0]["final_status"] == "degraded"
+    assert report["cases"][0]["final_status_source"] == "case_report"
+    assert report["failures"][0]["failure_stage"] == "tool_dispatch"
+    assert report["failures"][0]["reason"] == record["failure_reason"]
+
+
+def test_unattributed_failure_does_not_claim_finalize_stage(tmp_path: Path):
+    nodeid = "tests/unit/agentic_tool_loop/test_loop.py::test_setup_failure"
+    report = _run_gate(
+        tmp_path,
+        [{"nodeid": nodeid, "outcome": "failed", "marker_names": ["unit"], "failure_reason": "setup error"}],
+    )
+
+    assert report["cases"][0]["failure_stage"] == "unknown"
+    assert report["cases"][0]["failure_stage_source"] == "fallback"
+    assert report["failures"][0]["reason"] == "setup error"
