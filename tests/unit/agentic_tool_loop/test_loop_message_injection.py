@@ -391,7 +391,7 @@ async def test_duplicate_tool_call_id_is_deduplicated_across_rounds(loop_env):
         output_chunks.append(chunk)
 
     assert len(llm.calls) == 3
-    assert len(dispatch_batches) == 2
+    assert len(dispatch_batches) == 1
     assert len(dispatch_batches[0]) == 1
     assert dispatch_batches[0][0]["_tool_call_id"] == "dup-id"
     assert dispatch_batches[0][0]["args"]["query"] == "alpha"
