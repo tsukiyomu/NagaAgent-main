@@ -1390,6 +1390,9 @@ async def run_agentic_loop(
 
     consecutive_failures = 0  # 连续全部失败的轮次计数
     needs_summary = False  # 是否需要进行最终总结轮
+    # OpenAI-compatible tool_call_id is an idempotency key within one loop run.
+    # Keep this state local so independent requests/sessions cannot suppress each other.
+    seen_tool_call_ids = set()
     t_loop_start = _time.monotonic()
 
     for round_num in range(1, max_rounds + 1):
@@ -1468,6 +1471,27 @@ async def run_agentic_loop(
         else:
             clean_text, tool_calls = parse_tool_calls_from_text(complete_text)
 
+        # Native providers may repeat an already completed call in a later round.
+        # Drop the repeated call before any notification, dispatch, or history mutation;
+        # empty/missing IDs are not deduplicated because they cannot identify a call.
+        duplicate_tool_call_ids = []
+        if use_native:
+            unique_tool_calls = []
+            for tool_call in tool_calls:
+                tool_call_id = tool_call.get("_tool_call_id", "")
+                if tool_call_id and tool_call_id in seen_tool_call_ids:
+                    duplicate_tool_call_ids.append(tool_call_id)
+                    continue
+                unique_tool_calls.append(tool_call)
+                if tool_call_id:
+                    seen_tool_call_ids.add(tool_call_id)
+            tool_calls = unique_tool_calls
+            if duplicate_tool_call_ids:
+                logger.warning(
+                    f"[AgenticLoop] Round {round_num}: 忽略重复 tool_call_id: "
+                    f"{duplicate_tool_call_ids}"
+                )
+
         # 4. 分离 live2d 和可执行调用
         actionable_calls = [tc for tc in tool_calls if tc.get("agentType") != "live2d"]
         live2d_calls = [tc for tc in tool_calls if tc.get("agentType") == "live2d"]
@@ -1501,6 +1525,16 @@ async def run_agentic_loop(
 
         # 5. 如果没有可执行的工具调用，循环结束
         if not actionable_calls:
+            # A duplicate-only native round has already been handled by an earlier
+            # round. Continue without dispatching or reinjecting it so the model can
+            # converge on a final answer while preserving one history pair per ID.
+            if duplicate_tool_call_ids and not tool_calls:
+                yield _format_sse_event("round_end", {"round": round_num, "has_more": True})
+                if round_num < max_rounds:
+                    continue
+                needs_summary = True
+                break
+
             # 模型只返回了 live2d 调用而没有文字内容时（Anthropic 常见行为），
             # 需要将 live2d tool call 的结果回注并再调用一轮 LLM 来生成文字回复
             if live2d_calls and not complete_text.strip() and use_native and round_num < max_rounds:

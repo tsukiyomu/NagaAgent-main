@@ -20,6 +20,7 @@ from tests.support.agentic_tool_loop_helpers import (
     sse,
     sse_done,
 )
+from tests.support.failure_attribution import build_failure_attribution
 
 
 pytestmark = [pytest.mark.unit]
@@ -330,19 +331,14 @@ async def test_multi_round_native_result_injection_stays_idempotent(loop_env):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="runtime does not deduplicate duplicate tool_call_id injections across rounds yet",
-    strict=False,
-)
 async def test_duplicate_tool_call_id_is_deduplicated_across_rounds(loop_env):
-    """Duplicate `tool_call_id` should not be reinjected into loop history.
+    """Duplicate `tool_call_id` should not be redispatched or reinjected.
 
     Test path:
     1. Round 1 emits tool call `dup-id`.
     2. Round 2 emits another tool call using the same id.
-    3. Dispatcher returns success both times.
-    4. Target contract: later history should keep only one injected copy of that id.
-    5. Current runtime does not satisfy this yet, so the test is `xfail`.
+    3. Runtime ignores the duplicate before dispatch and history mutation.
+    4. Round 3 sees exactly one assistant/tool history pair and returns normally.
     """
     llm = ScriptedStreamLLM(
         round_scripts=[
@@ -364,8 +360,11 @@ async def test_duplicate_tool_call_id_is_deduplicated_across_rounds(loop_env):
     )
     loop_env.monkeypatch.setattr(loop_env.llm_service_module, "get_llm_service", lambda: llm)
 
+    dispatch_batches = []
+
     async def _dispatch_success(calls, _session_id, source_agent_id=None):
         del source_agent_id
+        dispatch_batches.append(list(calls))
         return [
             {
                 "service_name": "tool",
@@ -382,15 +381,20 @@ async def test_duplicate_tool_call_id_is_deduplicated_across_rounds(loop_env):
         {"role": "system", "content": "sys"},
         {"role": "user", "content": "please run two tools"},
     ]
-    async for _chunk in loop_module.run_agentic_loop(
+    output_chunks: list[str] = []
+    async for chunk in loop_module.run_agentic_loop(
         messages,
         session_id="unit-session",
         max_rounds=4,
         tools=[{"type": "function", "function": {"name": "tool__web_search"}}],
     ):
-        pass
+        output_chunks.append(chunk)
 
     assert len(llm.calls) == 3
+    assert len(dispatch_batches) == 1
+    assert len(dispatch_batches[0]) == 1
+    assert dispatch_batches[0][0]["_tool_call_id"] == "dup-id"
+    assert dispatch_batches[0][0]["args"]["query"] == "alpha"
     round3_messages = llm.calls[2]["messages"]
 
     # Target contract: only one injected tool message per tool_call_id.
@@ -408,3 +412,24 @@ async def test_duplicate_tool_call_id_is_deduplicated_across_rounds(loop_env):
         if c.get("id") == "dup-id"
     )
     assert dup_assistant_call_refs == 1
+
+    events = extract_sse_json_events(output_chunks)
+    tool_result_events = [event for event in events if event.get("type") == "tool_results"]
+    assert len(tool_result_events) == 1
+    assert not [event for event in events if event.get("type") == "error"]
+    round_ends = [event for event in events if event.get("type") == "round_end"]
+    assert round_ends[-1]["has_more"] is False
+
+    stream_text = "".join(output_chunks)
+    attribution = build_failure_attribution(
+        "duplicate_tool_call_id",
+        stream_text,
+        {
+            "done_seen": "data: [DONE]" in stream_text,
+            "finalize_called": 1,
+            "active_cleaned": True,
+        },
+    )
+    assert attribution["final_status"] == "success"
+    assert attribution["failure_stage"] == "none"
+    assert attribution["unhandled_exception"] is False
