@@ -262,3 +262,24 @@ def test_unattributed_failure_does_not_claim_finalize_stage(tmp_path: Path):
     assert report["cases"][0]["failure_stage"] == "unknown"
     assert report["cases"][0]["failure_stage_source"] == "fallback"
     assert report["failures"][0]["reason"] == "setup error"
+
+
+def test_non_blocking_case_failure_warns_even_below_baseline_tolerance(tmp_path: Path):
+    baseline_path = _baseline_path(tmp_path / "baseline")
+    _write_baseline(baseline_path, pass_rate=1.0, ttfb=100.0, latency=1000.0, avg_rounds=1.0)
+    records = [
+        _record(
+            nodeid=f"tests/unit/agentic_tool_loop/test_loop.py::test_case_{index}",
+            outcome="failed" if index == 0 else "passed",
+            blocking=False,
+            final_status="failed" if index == 0 else "success",
+            failure_stage="unknown" if index == 0 else "none",
+        )
+        for index in range(25)
+    ]
+
+    report = _run_gate(tmp_path, records)
+
+    assert report["summary"]["failed"] == 1
+    assert report["regression"]["pass_rate_delta"] == -0.04
+    assert report["summary"]["gate_result"] == "warn"

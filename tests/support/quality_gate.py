@@ -407,6 +407,12 @@ def _evaluate_gate(
     if blocking_failures:
         reasons.append(f"blocking cases failed: {len(blocking_failures)}")
 
+    non_blocking_failures = [
+        c for c in cases if not (c["blocking"] and not c["non_blocking"]) and c["outcome"] == "failed"
+    ]
+    if non_blocking_failures:
+        warn_reasons.append(f"non-blocking cases failed: {len(non_blocking_failures)}")
+
     blocking_stability_failures = [
         c
         for c in blocking_cases
